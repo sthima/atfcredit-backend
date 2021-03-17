@@ -30,6 +30,7 @@ class TextFileManager():
                         self.tm.get_PAYMENTS_HISTORY_IN_MARKET(),
                         self.tm.get_PAYMENTS_HISTORY_FACTORINGS(),
                         self.tm.get_PAYMENTS_HISTORY_ASSIGNOR(),
+                        self.tm.get_OVERDUE_DEBT(),
                         self.tm.get_COMMITMENTS_EVOLUTION(),
                         self.tm.get_COMMITMENTS_EVOLUTION_FACTORINGS(),
                         self.tm.get_COMMITMENTS_EVOLUTION_ASSIGNOR(),

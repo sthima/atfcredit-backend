@@ -21,6 +21,10 @@ class DataBaseManager():
     def save_PURE_TXT(self, mylist):
         x = self. __get_mycol().insert_many(mylist)
         # print(x.inserted_ids)
+
+    def get_all_base(self):
+        tables = self. __get_mycol().find({})
+        return tables
     
     def get_tables_of_CNPJ(self, cnpj):
         tables = self. __get_mycol().find_one({"cnpj": str(cnpj)})

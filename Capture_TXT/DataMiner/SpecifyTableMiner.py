@@ -43,7 +43,7 @@ class TableMiner():
     def get_RELATIONSHIP_WITH_MARKET(self):
         try:
             table_columns = ['0-6 MESES', '6MES-1ANO', '1-3ANOS', '3-5ANOS', '5-10ANOS', '+10ANOS','INAT']
-            return self.tf.search_table('RELACIONAMENTO COM O MERCADO', table_columns = table_columns)
+            return self.tf.search_default_table('RELACIONAMENTO COM O MERCADO', table_columns = table_columns)
         except:
             self.erro_tables.add('RELACIONAMENTO COM O MERCADO') 
             print('X - RELACIONAMENTO COM O MERCADO')
@@ -52,7 +52,7 @@ class TableMiner():
     def get_RELATIONSHIP_WITH_FACTORINGS(self):
         try:
             table_columns = ['0-6 MESES', '6MES-1ANO', '1-3ANOS', '3-5ANOS', '5-10ANOS', '+10ANOS','INAT']
-            return self.tf.search_table('RELACIONAMENTO COM -           FACTORINGS', table_columns = table_columns)
+            return self.tf.search_default_table('RELACIONAMENTO COM -           FACTORINGS', table_columns = table_columns)
         except:
             self.erro_tables.add('RELACIONAMENTO COM - FACTORINGS') 
             print('X - RELACIONAMENTO COM - FACTORINGS')
@@ -62,9 +62,9 @@ class TableMiner():
         try:
             table_columns = ['MES_1', 'QTD_1', 'MES_2', 'QTD_2', 'CINCO_ULTIMAS_CONSULTAS', 'QTD']
             try:
-                name_table, df = self.tf.search_table('REGISTRO DE CONSULTAS', table_columns = table_columns, split_line = 1)
+                name_table, df = self.tf.search_default_table('REGISTRO DE CONSULTAS', table_columns = table_columns, split_line = 1)
             except:
-                name_table, df = self.tf.search_table('CONSULTAS A SERASA', table_columns = table_columns, split_line = 1)
+                name_table, df = self.tf.search_default_table('CONSULTAS A SERASA', table_columns = table_columns, split_line = 1)
 
             if not(last_fives):
                 df_1_aux = df[['MES_1', 'QTD_1']]
@@ -81,7 +81,7 @@ class TableMiner():
                     aux_ = line.strip().split(' ')
                     date = aux_[0]
                     name = ' '.join(aux_[1:])
-                    return pd.Series({'DATA':pd.to_datetime(date, format = '%d/%m/%Y'), 
+                    return pd.Series({'DATA':date, 
                                     'CINCO_ULTIMAS_CONSULTAS':name.strip()})
                     
                 df_2['DATA'] = '' 
@@ -103,7 +103,7 @@ class TableMiner():
                     '+60_QTD','+60_%',
                     'A VISTA_QTD']
 
-            return self.tf.search_table('HISTORICO DE PAGAMENTOS (QTDE DE TITULOS)', \
+            return self.tf.search_default_table('HISTORICO DE PAGAMENTOS (QTDE DE TITULOS)', \
                                 table_columns= table_columns, \
                                 split_line =1)
         except:
@@ -120,7 +120,7 @@ class TableMiner():
                     '+60_QTD','+60_%',
                     'PMA A VISTA QTD','PMA A VISTA %','TOTAL']
 
-            return self.tf.search_table('HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)', \
+            return self.tf.search_default_table('HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)', \
                             table_columns = table_columns, \
                             split_line = 1, \
                             split_space = ' ')
@@ -138,7 +138,7 @@ class TableMiner():
                     '+60_QTD','+60_%',
                     'PMA A VISTA QTD','PMA A VISTA %','TOTAL']
 
-            return self.tf.search_table('HISTORICO DE PAGAMENTOS - FACTORINGS (VALORES EM R$)', \
+            return self.tf.search_default_table('HISTORICO DE PAGAMENTOS - FACTORINGS (VALORES EM R$)', \
                             table_columns = table_columns, \
                             split_line = 1, \
                             split_space = ' ')
@@ -147,27 +147,49 @@ class TableMiner():
             print('X - HISTORICO DE PAGAMENTOS - FACTORINGS (VALORES EM R$)')
             return 
 
-    def get_PAYMENTS_HISTORY_ASSIGNOR(self):
+    def get_OVERDUE_DEBT(self):
         try:
-            table_columns= ['MES/ANO','PONTUAL_QTD','PONTUAL_%',
-                    '8-15_QTD','8-15_%',
-                    '16-30_QTD','16-30_%',
-                    '31-60_QTD','31-60_%',
-                    '+60_QTD','+60_%',
-                    'PMA A VISTA QTD','PMA A VISTA %','TOTAL']
+            table_columns = ['DATA','MODALIDADE','VALOR','TITULO','INST_COBRADORA','LOCAL']
+            name_type = '\nDIVIDA VENCIDA'
 
-            return self.tf.search_table('HISTORICO DE PAGAMENTOS - VISAO CEDENTE (VALORES EM R$ MILHARES)', \
+            return self.tf.search_debt_table(name_type, \
                             table_columns = table_columns, \
                             split_line = 1, \
                             split_space = ' ')
         except:
+            self.erro_tables.add('DIVIDA VENCIDA') 
+            print('X -', 'DIVIDA VENCIDA')
+            return 
+
+    def get_PAYMENTS_HISTORY_ASSIGNOR(self):
+        try:
+            name_type = 'HISTORICO DE PAGAMENTOS - VISAO CEDENTE'
+            typ, split_column =  self.tf.type_txt_detect(name_type)
+            table_columns= ['MES/ANO','PONTUAL_QTD','PONTUAL_%',
+                            '8-15_QTD','8-15_%',
+                            '16-30_QTD','16-30_%',
+                            '31-60_QTD','31-60_%',
+                            '+60_QTD','+60_%',
+                            'A_VISTA_QTD','A_VISTA_QTD']
+            if not(split_column):
+                return self.tf.search_default_table('HISTORICO DE PAGAMENTOS - VISAO CEDENTE', \
+                                table_columns = table_columns, \
+                                split_line = 1, \
+                                split_space = ' ')
+            
+            else:
+                return self.tf.search_payments_table('HISTORICO DE PAGAMENTOS - VISAO CEDENTE', \
+                                    table_columns = table_columns, \
+                                    split_space = ' ')
+
+        except Exception as error:
             self.erro_tables.add('HISTORICO DE PAGAMENTOS - VISAO CEDENTE (VALORES EM R$ MILHARES)') 
-            print('X - HISTORICO DE PAGAMENTOS - VISAO CEDENTE (VALORES EM R$ MILHARES)')
+            print('X - HISTORICO DE PAGAMENTOS - VISAO CEDENTE (VALORES EM R$ MILHARES) - ', error)
             return 
 
     def get_COMMITMENTS_EVOLUTION(self):
         try:
-            return self.tf.search_table('EVOLUCAO DE COMPROMISSOS NO MERCADO (VALORES EM R$)')
+            return self.tf.search_default_table('EVOLUCAO DE COMPROMISSOS NO MERCADO (VALORES EM R$)')
         except:
             self.erro_tables.add('EVOLUCAO DE COMPROMISSOS NO MERCADO (VALORES EM R$)') 
             print('X - EVOLUCAO DE COMPROMISSOS NO MERCADO (VALORES EM R$)')
@@ -175,7 +197,7 @@ class TableMiner():
 
     def get_COMMITMENTS_EVOLUTION_FACTORINGS(self):
         try:
-            return self.tf.search_table('EVOLUCAO DE COMPROMISSOS - FACTORINGS (VALORES EM R$)', \
+            return self.tf.search_default_table('EVOLUCAO DE COMPROMISSOS - FACTORINGS (VALORES EM R$)', \
                                 split_line = 1, \
                                 table_columns = ['MES/ANO', 'A VENCER'])
         except:
@@ -185,15 +207,23 @@ class TableMiner():
 
     def get_COMMITMENTS_EVOLUTION_ASSIGNOR(self):
         try:
-            return self.tf.search_table('EVOLUCAO DE COMPROMISSOS - VISAO CEDENTE (VALORES EM R$)')
-        except:
-            self.erro_tables.add('EVOLUCAO DE COMPROMISSOS - VISAO CEDENTE (VALORES EM R$)') 
-            print('X - EVOLUCAO DE COMPROMISSOS - VISAO CEDENTE (VALORES EM R$)')
+            name_type = 'EVOLUCAO DE COMPROMISSOS - VISAO CEDENTE (VALORES EM R$)'
+            typ, split_column =  self.tf.type_txt_detect(name_type)
+            if typ:
+                return self.tf.search_evolution_table(name_type, \
+                                                    split_line = 1, \
+                                                    split_column = split_column, \
+                                                    split_space = '([..\|])')
+            else:
+                return self.tf.search_default_table(name_type, split_column = split_column, split_line = split_column)
+        except Exception as error:
+            self.erro_tables.add(name_type) 
+            print('X - '+name_type, ' - ', error)
             return 
 
     def get_MARKET_BUSINESS_REFERENCES(self):
         try:
-            return self.tf.search_table('REFERENCIAIS DE NEGOCIOS NO MERCADO (VALORES EM R$)', \
+            return self.tf.search_default_table('REFERENCIAIS DE NEGOCIOS NO MERCADO (VALORES EM R$)', \
                                 split_space = '    ')
         except:
             self.erro_tables.add('REFERENCIAIS DE NEGOCIOS NO MERCADO (VALORES EM R$)') 
@@ -202,7 +232,7 @@ class TableMiner():
 
     def get_TERM_BUSINESS_REFERENCES(self):
         try:
-            return self.tf.search_table('REFERENCIAIS DE NEGOCIOS A PRAZO - FACTORINGS (VALORES EM R$)',  \
+            return self.tf.search_default_table('REFERENCIAIS DE NEGOCIOS A PRAZO - FACTORINGS (VALORES EM R$)',  \
                                 split_space = '    ',  \
                                 split_line = 1,  \
                                 table_columns = ['DATA', 'VALOR', 'MEDIA'])
