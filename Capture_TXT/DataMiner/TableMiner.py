@@ -4,6 +4,8 @@ import re
 
 from .TableFinder import TableFinder
 
+from .PureTxt import Pendence
+
 class TableMiner():
 
     def __init__(self, text):
@@ -14,11 +16,7 @@ class TableMiner():
 # ----------------------- Methods to captures default tables ----------------------- #
     def get_PEFIN_PENDENCE(self):
         try:
-            tc, vc, df = self.tf.search_pendence_table('PEFIN')
-
-            data_pendence = {'TOTAL DE OCORRENCIAS':[tc], 'VALOR TOTAL':[vc]}
-            pendence_df = pd.DataFrame(data_pendence)
-
+            pendence_df, df =  Pendence().create_df(self.text, 'PEFIN')
             return 'PENDENCIAS', pendence_df, 'PEFIN', df
         
         except:
@@ -28,11 +26,7 @@ class TableMiner():
     
     def get_REFIN_PENDENCE(self):
         try:
-            tc, vc, df = self.tf.search_pendence_table('REFIN')
-
-            data_pendence = {'TOTAL DE OCORRENCIAS':[tc], 'VALOR TOTAL':[vc]}
-            pendence_df = pd.DataFrame(data_pendence)
-
+            pendence_df, df =  Pendence().create_df(self.text, 'REFIN')
             return 'PENDENCIAS', pendence_df, 'REFIN', df
         
         except:

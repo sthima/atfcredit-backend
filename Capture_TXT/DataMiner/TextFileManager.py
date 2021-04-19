@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
-from .SpecifyTableMiner import TableMiner
+from .TableMiner import TableMiner
 import json
 
 class TextFileManager():
