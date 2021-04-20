@@ -4,7 +4,7 @@ import re
 
 from .TableFinder import TableFinder
 
-from .PureTxt import Pendence
+from .PureTxt import Pendence, Relationship
 
 class TableMiner():
 
@@ -14,42 +14,42 @@ class TableMiner():
         self.erro_tables = set()
 
 # ----------------------- Methods to captures default tables ----------------------- #
+    def print_error(self, name_type):
+        name_type = " ".join(name_type.split())
+        self.erro_tables.add(name_type) 
+        print('X - ', name_type)
+
     def get_PEFIN_PENDENCE(self):
+        name_type = 'PEFIN'
         try:
-            pendence_df, df =  Pendence().create_df(self.text, 'PEFIN')
-            return 'PENDENCIAS', pendence_df, 'PEFIN', df
-        
+            return Pendence().create_df(self.text, name_type)
         except:
-            self.erro_tables.add('PEFIN')
-            print('X - PEFIN')
+            self.print_error(name_type)
             return 
     
     def get_REFIN_PENDENCE(self):
+        name_type = 'REFIN'
         try:
-            pendence_df, df =  Pendence().create_df(self.text, 'REFIN')
-            return 'PENDENCIAS', pendence_df, 'REFIN', df
-        
+            return Pendence().create_df(self.text, name_type)
         except:
-            self.erro_tables.add('REFIN')
-            print('X - REFIN')
+            self.print_error(name_type)
             return 
             
+            
     def get_RELATIONSHIP_WITH_MARKET(self):
-        try:
-            table_columns = ['0-6 MESES', '6MES-1ANO', '1-3ANOS', '3-5ANOS', '5-10ANOS', '+10ANOS','INAT']
-            return self.tf.search_default_table('RELACIONAMENTO COM O MERCADO', table_columns = table_columns)
-        except:
-            self.erro_tables.add('RELACIONAMENTO COM O MERCADO') 
-            print('X - RELACIONAMENTO COM O MERCADO')
-            return 
+        name_type = 'RELACIONAMENTO COM O MERCADO'
+        if True:#try:
+            return Relationship().create_df(self.text, name_type)
+        # except:
+        #     self.print_error(name_type)
+        #     return 
     
     def get_RELATIONSHIP_WITH_FACTORINGS(self):
+        name_type = 'RELACIONAMENTO COM -           FACTORINGS'
         try:
-            table_columns = ['0-6 MESES', '6MES-1ANO', '1-3ANOS', '3-5ANOS', '5-10ANOS', '+10ANOS','INAT']
-            return self.tf.search_default_table('RELACIONAMENTO COM -           FACTORINGS', table_columns = table_columns)
+            return Relationship().create_df(self.text, name_type)
         except:
-            self.erro_tables.add('RELACIONAMENTO COM - FACTORINGS') 
-            print('X - RELACIONAMENTO COM - FACTORINGS')
+            self.print_error(name_type)
             return 
 
     def get_CONSULTATIONS_REGISTRATIONS(self, last_fives = False):
