@@ -18,20 +18,10 @@ class Relationship(TextInterpreter):
                                                                    table_vector = table_vector,\
                                                                    table_columns = table_columns)
 
-        df = self.__build_df(line_aux, table_columns)
+        df = self._build_df(line_aux, table_columns)
         
         return re.sub(' +', ' ', name_type), df.reset_index(drop = True)
 
 
-    def __build_df(self, line_aux, table_columns):
-        data = {i:[] for i in table_columns}
-        for l in line_aux:
-            for j in range(len(table_columns)):
-                try:
-                    data[table_columns[j]].append(l[j])
-                except:
-                    data[table_columns[j]].append(np.nan)
-        df = pd.DataFrame(data)
 
-        return df
         

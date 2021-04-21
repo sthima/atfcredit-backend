@@ -30,3 +30,15 @@ class TextInterpreter:
         line_aux = [i[i!=''] for i in line_aux]
 
         return line_aux, table_columns, table_name
+
+    def _build_df(self, line_aux, table_columns):
+        data = {i:[] for i in table_columns}
+        for l in line_aux:
+            for j in range(len(table_columns)):
+                try:
+                    data[table_columns[j]].append(l[j])
+                except:
+                    data[table_columns[j]].append(np.nan)
+        df = pd.DataFrame(data)
+
+        return df
