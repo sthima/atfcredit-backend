@@ -4,7 +4,7 @@ import re
 
 from .TableFinder import TableFinder
 
-from .PureTxt import Pendence, Relationship
+from .PureTxt import Pendence, Relationship, RegistryConsults, RegistryLastFiveConsults
 
 class TableMiner():
 
@@ -38,11 +38,11 @@ class TableMiner():
             
     def get_RELATIONSHIP_WITH_MARKET(self):
         name_type = 'RELACIONAMENTO COM O MERCADO'
-        if True:#try:
+        try:
             return Relationship().create_df(self.text, name_type)
-        # except:
-        #     self.print_error(name_type)
-        #     return 
+        except:
+            self.print_error(name_type)
+            return 
     
     def get_RELATIONSHIP_WITH_FACTORINGS(self):
         name_type = 'RELACIONAMENTO COM -           FACTORINGS'
@@ -52,40 +52,26 @@ class TableMiner():
             self.print_error(name_type)
             return 
 
-    def get_CONSULTATIONS_REGISTRATIONS(self, last_fives = False):
+    def get_CONSULTATIONS_REGISTRATIONS(self):
         try:
-            table_columns = ['MES_1', 'QTD_1', 'MES_2', 'QTD_2', 'CINCO_ULTIMAS_CONSULTAS', 'QTD']
             try:
-                name_table, df = self.tf.search_default_table('REGISTRO DE CONSULTAS', table_columns = table_columns, split_line = 1)
+                return RegistryConsults().create_df(self.text, 'REGISTRO DE CONSULTAS')
             except:
-                name_table, df = self.tf.search_default_table('CONSULTAS A SERASA', table_columns = table_columns, split_line = 1)
+                return RegistryConsults().create_df(self.text, 'CONSULTAS A SERASA')
 
-            if not(last_fives):
-                df_1_aux = df[['MES_1', 'QTD_1']]
-                df_1_aux.columns = ['MES','QTD']
-                df_2_aux = df[['MES_2', 'QTD_2']]
-                df_2_aux.columns = ['MES','QTD']
-
-                df_1 = pd.concat([df_1_aux,df_2_aux])
-                return 'REGISTRO DE CONSULTAS', df_1.reset_index(drop = True)
-
-            else:
-                df_2 = df[['CINCO_ULTIMAS_CONSULTAS', 'QTD']].iloc[:-1]
-                def extract_date(line):
-                    aux_ = line.strip().split(' ')
-                    date = aux_[0]
-                    name = ' '.join(aux_[1:])
-                    return pd.Series({'DATA':date, 
-                                    'CINCO_ULTIMAS_CONSULTAS':name.strip()})
-                    
-                df_2['DATA'] = '' 
-                df_2[['DATA','CINCO_ULTIMAS_CONSULTAS']] = df_2['CINCO_ULTIMAS_CONSULTAS'].apply(extract_date)
-                df_2.columns = ['EMPRESA', 'QTD','DATA']
-
-                return 'CINCO ULTIMAS CONSULTAS', df_2.reset_index(drop = True)
         except:
-            self.erro_tables.add('REGISTRO DE CONSULTAS') 
-            print('X - REGISTRO DE CONSULTAS')
+            self.print_error('REGISTRO DE CONSULTAS')
+            return 
+
+    def get_LAST_FIVE_CONSULTATIONS_REGISTRATIONS(self):
+        try:
+            try:
+                return RegistryLastFiveConsults().create_df(self.text, 'REGISTRO DE CONSULTAS')
+            except:
+                return RegistryLastFiveConsults().create_df(self.text, 'CONSULTAS A SERASA')
+
+        except:
+            self.print_error("ULTIMOS 5 REGISTRO DE CONSULTAS" )
             return 
 
     def get_PAYMENTS_HISTORY(self):
