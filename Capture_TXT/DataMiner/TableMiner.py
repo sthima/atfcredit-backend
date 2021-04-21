@@ -4,7 +4,8 @@ import re
 
 from .TableFinder import TableFinder
 
-from .PureTxt import Pendence, Relationship, RegistryConsults, RegistryLastFiveConsults
+from .PureTxt import *
+# from .PureTxt import Pendence, Relationship, RegistryConsults, RegistryLastFiveConsults, PaymentsHistory
 
 class TableMiner():
 
@@ -75,58 +76,30 @@ class TableMiner():
             return 
 
     def get_PAYMENTS_HISTORY(self):
+        name_type = 'HISTORICO DE PAGAMENTOS (QTDE DE TITULOS)'
         try:
-            table_columns= ['PONTUAL_QTD','PONTUAL_%',
-                    '8-15_QTD','8-15_%',
-                    '16-30_QTD','16-30_%',
-                    '31-60_QTD','31-60_%',
-                    '+60_QTD','+60_%',
-                    'A VISTA_QTD']
-
-            return self.tf.search_default_table('HISTORICO DE PAGAMENTOS (QTDE DE TITULOS)', \
-                                table_columns= table_columns, \
-                                split_line =1)
+            return PaymentsHistory().create_df(self.text, name_type)
         except:
-            self.erro_tables.add('HISTORICO DE PAGAMENTOS (QTDE DE TITULOS)') 
-            print('X - HISTORICO DE PAGAMENTOS (QTDE DE TITULOS)')
+            self.print_error(name_type)
             return 
+        
 
     def get_PAYMENTS_HISTORY_IN_MARKET(self):
+        name_type = 'HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)'
         try:
-            table_columns= ['MES/ANO','PONTUAL_QTD','PONTUAL_%',
-                    '8-15_QTD','8-15_%',
-                    '16-30_QTD','16-30_%',
-                    '31-60_QTD','31-60_%',
-                    '+60_QTD','+60_%',
-                    'PMA A VISTA QTD','PMA A VISTA %','TOTAL']
-
-            return self.tf.search_default_table('HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)', \
-                            table_columns = table_columns, \
-                            split_line = 1, \
-                            split_space = ' ')
+            return PaymentsHistoryMarket().create_df(self.text, name_type)
         except:
-            self.erro_tables.add('HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)') 
-            print('X - HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)')
+            self.print_error(name_type)
             return 
-
+        
     def get_PAYMENTS_HISTORY_FACTORINGS(self):
+        name_type = 'HISTORICO DE PAGAMENTOS - FACTORINGS (VALORES EM R$)'
         try:
-            table_columns= ['MES/ANO','PONTUAL_QTD','PONTUAL_%',
-                    '8-15_QTD','8-15_%',
-                    '16-30_QTD','16-30_%',
-                    '31-60_QTD','31-60_%',
-                    '+60_QTD','+60_%',
-                    'PMA A VISTA QTD','PMA A VISTA %','TOTAL']
-
-            return self.tf.search_default_table('HISTORICO DE PAGAMENTOS - FACTORINGS (VALORES EM R$)', \
-                            table_columns = table_columns, \
-                            split_line = 1, \
-                            split_space = ' ')
+            return PaymentsHistoryMarket().create_df(self.text, name_type)
         except:
-            self.erro_tables.add('HISTORICO DE PAGAMENTOS - FACTORINGS (VALORES EM R$)') 
-            print('X - HISTORICO DE PAGAMENTOS - FACTORINGS (VALORES EM R$)')
+            self.print_error(name_type)
             return 
-
+        
     def get_OVERDUE_DEBT(self):
         try:
             table_columns = ['DATA','MODALIDADE','VALOR','TITULO','INST_COBRADORA','LOCAL']

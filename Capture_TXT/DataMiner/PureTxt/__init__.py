@@ -1,4 +1,4 @@
 from .Pendence import Pendence
 from .Relationship import Relationship
-from .RegistryConsults import RegistryConsults
-from .RegistryConsults import RegistryLastFiveConsults
+from .RegistryConsults import RegistryConsults, RegistryLastFiveConsults
+from .PaymentsHistory import PaymentsHistory,PaymentsHistoryMarket
