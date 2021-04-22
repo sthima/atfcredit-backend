@@ -42,3 +42,18 @@ class TextInterpreter:
         df = pd.DataFrame(data)
 
         return df
+
+    def type_txt_detect(self, text, name):
+        vector_aux = text[text.find(name):].split('\n')
+        vector_aux = np.array(vector_aux)
+
+        table_vector = vector_aux[:np.where(vector_aux == '')[0][0]]
+        count = 0
+        split_column = 0
+        for i in table_vector:
+            if 'ATUALIZACAO' in i:
+                split_column = 1
+            count+=i.count('|')
+
+        if count < 4: return 0, split_column
+        else: return 1, split_column

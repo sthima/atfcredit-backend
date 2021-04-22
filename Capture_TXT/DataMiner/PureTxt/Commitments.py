@@ -41,21 +41,6 @@ class CommitmentsFactorings(TextInterpreter):
 
 class CommitmentsAssignor(TextInterpreter):
 
-    def type_txt_detect(self, text, name):
-        vector_aux = text[text.find(name):].split('\n')
-        vector_aux = np.array(vector_aux)
-
-        table_vector = vector_aux[:np.where(vector_aux == '')[0][0]]
-        count = 0
-        split_column = 0
-        for i in table_vector:
-            if 'ATUALIZACAO' in i:
-                split_column = 1
-            count+=i.count('|') 
-
-        if count < 4: return 0, split_column
-        else: return 1, split_column
-
     def create_df(self, text, name_type):
         typ, split_column_aux =  self.type_txt_detect(text, name_type)
 
