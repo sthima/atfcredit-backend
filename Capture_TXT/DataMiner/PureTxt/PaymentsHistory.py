@@ -6,28 +6,68 @@ import re
 
 class PaymentsHistory(TextInterpreter):
     def create_df(self, text, name_type):
-
         table_columns= ['PONTUAL_QTD','PONTUAL_%',
                     '8-15_QTD','8-15_%',
                     '16-30_QTD','16-30_%',
                     '31-60_QTD','31-60_%',
                     '+60_QTD','+60_%',
                     'A VISTA_QTD']
-        split_line = 1
 
+        split_line =1
         vector_aux = text[text.find(name_type):].split('\n')
         vector_aux = np.array(vector_aux)
-        table_vector = vector_aux[:np.where(vector_aux == '')[0][0]]
-
-        line_aux, table_columns, table_name = self._default_search(text= text,\
-                                                                   table_vector = table_vector,\
-                                                                   table_columns = table_columns,\
-                                                                   split_line = split_line)
-
-        df = self._build_df(line_aux, table_columns).reset_index(drop = True)
-        name_table = re.sub(' +', ' ', name_type)
         
-        return name_type, df
+        typ, _  = self.type_txt_detect(text, name_type)
+
+        table_vector = vector_aux[:np.where(vector_aux == '')[0][0]]
+        
+        table_name = table_vector[0].split('  ')[0].strip()
+        
+        if len(table_columns) == 0:
+            table_columns = table_vector[1].split('  ')
+            table_columns = np.array(table_columns)
+            table_columns= table_columns[table_columns!='']
+            table_columns = [i.strip().replace(':','') for i in table_columns]
+
+        line_aux = table_vector[2+split_line:]
+        line_aux = np.array(line_aux)
+        line_aux = line_aux[line_aux!='']
+
+        if typ == 1:
+            line_aux = [np.array(i.split('|')) for i in line_aux]
+            line_aux = [[i.replace('-','') for i in j] for j in line_aux]
+            line_aux = [[re.sub(' +', ' ', i).strip() for i in j] for j in line_aux]
+            line_aux = np.array([[i for i in j[1:]] for j in line_aux])
+            line_aux = [i[(i!='')] for i in line_aux]
+            new_line_aux = []
+            for i in line_aux:
+                if len(i) <= 0:
+                    new_line_aux.append(np.nan)
+                    new_line_aux.append(np.nan)
+                for j in i:
+                    new_line_aux.append(j)
+
+            line_aux = [new_line_aux]
+
+            
+            
+        else:
+            line_aux = [np.array(i.split('  ')) for i in line_aux]
+            line_aux = [i[i!=''] for i in line_aux]
+            if len(line_aux) > 1:
+                line_aux = line_aux[1:]
+
+        
+        data = {i:[] for i in table_columns}
+        for l in line_aux:
+            for j in range(len(table_columns)):
+                try:
+                    data[table_columns[j]].append(l[j])
+                except:
+                    data[table_columns[j]].append(np.nan)
+        df = pd.DataFrame(data)
+                    
+        return re.sub(' +', ' ', name_type), df.reset_index(drop = True)
 
 class PaymentsHistoryMarket(TextInterpreter):
     def create_df(self, text, name_type):
@@ -56,22 +96,6 @@ class PaymentsHistoryMarket(TextInterpreter):
 
 
 class PaymentsHistoryAssignor(TextInterpreter):
-
-    def type_txt_detect(self, text, name):
-        vector_aux = text[text.find(name):].split('\n')
-        vector_aux = np.array(vector_aux)
-
-        table_vector = vector_aux[:np.where(vector_aux == '')[0][0]]
-        count = 0
-        split_column = 0
-        for i in table_vector:
-            if 'ATUALIZACAO' in i:
-                split_column = 1
-            count+=i.count('|')
-
-        if count < 4: return 0, split_column
-        else: return 1, split_column
-
 
     def create_df(self, text, name_type):
 
