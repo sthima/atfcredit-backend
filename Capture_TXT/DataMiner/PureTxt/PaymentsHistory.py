@@ -5,6 +5,7 @@ import re
 
 
 class PaymentsHistory(TextInterpreter):
+
     def create_df(self, text, name_type):
         table_columns= ['PONTUAL_QTD','PONTUAL_%',
                     '8-15_QTD','8-15_%',
@@ -65,9 +66,25 @@ class PaymentsHistory(TextInterpreter):
                     data[table_columns[j]].append(l[j])
                 except:
                     data[table_columns[j]].append(np.nan)
-        df = pd.DataFrame(data)
-                    
-        return re.sub(' +', ' ', name_type), df.reset_index(drop = True)
+        df = pd.DataFrame(data).reset_index(drop = True)
+
+
+        def clear_text(x):
+            x = x.iloc[0]
+            
+            if not(pd.isna(x)):
+                x = x.replace('%', '')
+                numbers = x.split('A')
+                numbers = [i.strip() for i in numbers]
+                numbers = [i.replace(',','.') for i in numbers]
+                numbers = [float(i) for i in numbers]
+                return [numbers[0]]
+            return x
+
+        df = df.apply(clear_text, axis = 0 )  
+        df = df.fillna(0)      
+
+        return re.sub(' +', ' ', name_type), df
 
 class PaymentsHistoryMarket(TextInterpreter):
     def create_df(self, text, name_type):
