@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
-from .SpecifyTableMiner import TableMiner
+from .TableMiner import TableMiner
 import json
 
 class TextFileManager():
@@ -25,7 +25,7 @@ class TextFileManager():
         tables_list = [self.tm.get_RELATIONSHIP_WITH_MARKET(),
                         self.tm.get_RELATIONSHIP_WITH_FACTORINGS(),
                         self.tm.get_CONSULTATIONS_REGISTRATIONS(),
-                        self.tm.get_CONSULTATIONS_REGISTRATIONS(last_fives = True),
+                        self.tm.get_LAST_FIVE_CONSULTATIONS_REGISTRATIONS(),
                         self.tm.get_PAYMENTS_HISTORY(),
                         self.tm.get_PAYMENTS_HISTORY_IN_MARKET(),
                         self.tm.get_PAYMENTS_HISTORY_FACTORINGS(),
