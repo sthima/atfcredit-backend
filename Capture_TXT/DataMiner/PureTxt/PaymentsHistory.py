@@ -69,6 +69,9 @@ class PaymentsHistory(TextInterpreter):
                 numbers = x.split('A')
                 numbers = [i.strip() for i in numbers]
                 numbers = [i.replace(',','.') for i in numbers]
+                numbers = [i.replace('MIL','') for i in numbers]
+                numbers = [i.replace('MI','') for i in numbers]
+                numbers = [i.strip() for i in numbers]
                 numbers = [float(i) for i in numbers]
                 return [numbers[0]]
             return x
