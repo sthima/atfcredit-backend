@@ -59,15 +59,7 @@ class PaymentsHistory(TextInterpreter):
                 line_aux = line_aux[1:]
 
         
-        data = {i:[] for i in table_columns}
-        for l in line_aux:
-            for j in range(len(table_columns)):
-                try:
-                    data[table_columns[j]].append(l[j])
-                except:
-                    data[table_columns[j]].append(np.nan)
-        df = pd.DataFrame(data).reset_index(drop = True)
-
+        df = self._build_df(line_aux, table_columns).reset_index(drop = True)
 
         def clear_text(x):
             x = x.iloc[0]
@@ -87,27 +79,108 @@ class PaymentsHistory(TextInterpreter):
         return re.sub(' +', ' ', name_type), df
 
 class PaymentsHistoryMarket(TextInterpreter):
+
     def create_df(self, text, name_type):
 
         table_columns= ['MES/ANO','PONTUAL_QTD','PONTUAL_%',
-                    '8-15_QTD','8-15_%',
-                    '16-30_QTD','16-30_%',
-                    '31-60_QTD','31-60_%',
-                    '+60_QTD','+60_%',
-                    'PMA A VISTA QTD','PMA A VISTA %','TOTAL']
-        split_line = 1
+            '8-15_QTD','8-15_%',
+            '16-30_QTD','16-30_%',
+            '31-60_QTD','31-60_%',
+            '+60_QTD','+60_%',
+            'PMA A VISTA QTD','PMA A VISTA %','TOTAL']
 
+        split_line =1
         vector_aux = text[text.find(name_type):].split('\n')
         vector_aux = np.array(vector_aux)
-        table_vector = vector_aux[:np.where(vector_aux == '')[0][0]]
 
-        line_aux, table_columns, table_name = self._default_search(text= text,\
-                                                                   table_vector = table_vector,\
-                                                                   table_columns = table_columns,\
-                                                                   split_line = split_line)
+        typ, _  = self.type_txt_detect(text, name_type)
 
+        if typ == 0:
+            table_vector = vector_aux[:np.where(vector_aux == '')[0][0]]
+        else:
+            table_vector = vector_aux[:np.where(vector_aux == '* PMA = PRAZO MEDIO DE ATRASO (EM DIAS)')[0][0]]
+
+        table_name = table_vector[0].split('  ')[0].strip()
+
+        if len(table_columns) == 0:
+            table_columns = table_vector[1].split('  ')
+            table_columns = np.array(table_columns)
+            table_columns= table_columns[table_columns!='']
+            table_columns = [i.strip().replace(':','') for i in table_columns]
+
+        line_aux = table_vector[2+split_line:]
+        line_aux = np.array(line_aux)
+        line_aux = line_aux[line_aux!='']
+
+        if typ == 1:
+            line_aux = [np.array(i.split('|')) for i in line_aux]
+            line_aux = [[i.replace('-','') for i in j] for j in line_aux]
+            line_aux = [[re.sub(' +', ' ', i).strip() for i in j] for j in line_aux]
+            cont = 0
+            cont_aux = 0
+
+            new_line_aux = []
+            while cont+cont_aux < len(line_aux):
+                new_line = []
+
+                new_line.append(line_aux[cont_aux+cont][0])
+
+                aux = line_aux[cont_aux+cont+1 :cont_aux+cont+8]
+                aux = np.array([[i for i in j[1:]] for j in aux])
+                aux = [i[(i!='')] for i in aux]
+
+                for i in aux:
+                    if len(i) <= 0:
+                        new_line.append(np.nan)
+                        new_line.append(np.nan)
+                    for j in i:
+                        new_line.append(j)
+
+                cont += 7
+                cont_aux += 1
+
+                new_line_aux.append(new_line)
+                
+            line_aux = new_line_aux
+            
+            
+        else:
+            line_aux = [np.array(i.split(' ')) for i in line_aux]
+            line_aux = [i[i!=''] for i in line_aux]
+            if line_aux[0][0] == 'MES/ANO':
+                line_aux = line_aux[1:]
         df = self._build_df(line_aux, table_columns).reset_index(drop = True)
-        name_table = re.sub(' +', ' ', name_type)
+
+
+
+        def clear_text(line):
+            line_aux = []
+        
+            for x in line:
+                if not(pd.isna(x)):
+                    x = x.replace('%', '')
+                    numbers = x.split('A')
+                    
+                    numbers = [i.replace(',','.') for i in numbers]
+                    numbers = [i.replace('MIL','') for i in numbers]
+                    numbers = [i.replace('MI','') for i in numbers]
+                    numbers = [i.strip() for i in numbers]
+                    numbers = np.array(numbers)
+                    numbers = numbers[numbers!='']
+                    numbers = [float(i) for i in numbers]
+                    
+                    line_aux.append(numbers[0])
+                else:
+                    line_aux.append(0)
+                    
+            return pd.Series(line_aux)
+        
+
+        if typ == 0:
+            df = df.iloc[:-1]
+        df.loc[:,'PONTUAL_QTD':] = df.loc[:,'PONTUAL_QTD':].apply(clear_text, axis = 0 )
+        
+
         
         return name_type, df
 
