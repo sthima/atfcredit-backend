@@ -22,22 +22,26 @@ class TextFileManager():
         return cpnj
 
     def create_tables_dict(self):
-        tables_list = [self.tm.get_RELATIONSHIP_WITH_MARKET(),
-                        self.tm.get_RELATIONSHIP_WITH_FACTORINGS(),
-                        self.tm.get_CONSULTATIONS_REGISTRATIONS(),
+        tables_list = [self.tm.get_CONSULTATIONS_REGISTRATIONS(),
+
                         self.tm.get_LAST_FIVE_CONSULTATIONS_REGISTRATIONS(),
+                        
                         self.tm.get_PAYMENTS_HISTORY(),
-                        self.tm.get_PAYMENTS_HISTORY_IN_MARKET(),
-                        self.tm.get_PAYMENTS_HISTORY_FACTORINGS(),
                         self.tm.get_PAYMENTS_HISTORY_ASSIGNOR(),
-                        self.tm.get_OVERDUE_DEBT(),
-                        self.tm.get_COMMITMENTS_EVOLUTION(),
-                        self.tm.get_COMMITMENTS_EVOLUTION_FACTORINGS(),
+
                         self.tm.get_COMMITMENTS_EVOLUTION_ASSIGNOR(),
-                        self.tm.get_MARKET_BUSINESS_REFERENCES(),
-                        self.tm.get_TERM_BUSINESS_REFERENCES(),
+
                         self.tm.get_PEFIN_PENDENCE(),
-                        self.tm.get_REFIN_PENDENCE()]
+                        
+                        self.tm.get_REFIN_PENDENCE(),
+
+                        self.tm.get_OVERDUE_DEBT(),
+
+                        self.tm.get_PROTEST(),
+                        self.tm.get_LAWSUIT(),
+                        self.tm.get_BANKRUPTCY(),
+
+                        ]
         tables_obj = {}
 
         for r in tables_list:
