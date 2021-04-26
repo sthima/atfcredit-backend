@@ -4,5 +4,7 @@ from .PaymentsHistory import *
 from .Relationship import *
 from .OverdueDebt import *
 from .Commitments import *
+from .Bankruptcy import *
 from .Pendence import *
-
+from .Lawsuit import *
+from .Protest import *
