@@ -159,3 +159,25 @@ class TableMiner():
         except:
             self.print_error(name_type)
             return    
+
+    def get_LAWSUIT(self):
+        name_type = '\nACAO JUDICIAL'
+        
+        try:
+            return Lawsuit().create_df(self.text, name_type)
+        except Exception  as e:
+            print(e)
+
+            self.print_error(name_type)
+            return    
+
+    def get_BANKRUPTCY(self):
+        name_type = '\nFALENCIA'
+        
+        try:
+            return Bankruptcy().create_df(self.text, name_type)
+        except Exception  as e:
+            print(e)
+
+            self.print_error(name_type)
+            return    
