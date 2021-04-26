@@ -79,7 +79,6 @@ class TableMiner():
             self.print_error(name_type)
             return 
         
-
     def get_PAYMENTS_HISTORY_IN_MARKET(self):
         name_type = 'HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)'
         try:
@@ -148,6 +147,15 @@ class TableMiner():
         name_type = 'REFERENCIAIS DE NEGOCIOS A PRAZO - FACTORINGS (VALORES EM R$)'
         try:
             return BuisinessReferencesTerm().create_df(self.text, name_type)
+        except:
+            self.print_error(name_type)
+            return    
+
+    def get_PROTEST(self):
+        name_type = '\nPROTESTO'
+        
+        try:
+            return Protest().create_df(self.text, name_type)
         except:
             self.print_error(name_type)
             return    
