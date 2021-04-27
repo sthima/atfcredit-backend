@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import re
 
-from .PureTxt import *
+from .CleanTxt import *
 
 class TableMiner():
 
@@ -31,8 +31,7 @@ class TableMiner():
         except:
             self.print_error(name_type)
             return 
-            
-            
+              
     def get_RELATIONSHIP_WITH_MARKET(self):
         name_type = 'RELACIONAMENTO COM O MERCADO'
         try:
@@ -79,7 +78,6 @@ class TableMiner():
             self.print_error(name_type)
             return 
         
-
     def get_PAYMENTS_HISTORY_IN_MARKET(self):
         name_type = 'HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)'
         try:
@@ -149,5 +147,34 @@ class TableMiner():
         try:
             return BuisinessReferencesTerm().create_df(self.text, name_type)
         except:
+            self.print_error(name_type)
+            return    
+
+    def get_PROTEST(self):
+        name_type = '\nPROTESTO'
+        
+        try:
+            return Protest().create_df(self.text, name_type)
+        except:
+            self.print_error(name_type)
+            return    
+
+    def get_LAWSUIT(self):
+        name_type = '\nACAO JUDICIAL'
+        
+        try:
+            return Lawsuit().create_df(self.text, name_type)
+        except Exception  as e:
+            print(e)
+
+            self.print_error(name_type)
+            return    
+
+    def get_BANKRUPTCY(self):
+        name_type = '\nFALENCIA'
+        
+        try:
+            return Bankruptcy().create_df(self.text, name_type)
+        except Exception  as e:
             self.print_error(name_type)
             return    

@@ -1,13 +1,11 @@
 import pandas as pd
-import numpy as np
-import re
 
 class TextInterpreter:
-    def create_df(self, text:str) -> pd.DataFrame():
+    def create_df_by_text(self, text:str) -> pd.DataFrame():
         """Extract the information into text and convert it into a data frame"""
         pass
 
-    def _default_search(self, 
+    def __default_search(self, 
                         text:str,
                         table_vector:list,\
                         table_columns:list = [],\
@@ -30,15 +28,3 @@ class TextInterpreter:
         line_aux = [i[i!=''] for i in line_aux]
 
         return line_aux, table_columns, table_name
-
-    def _build_df(self, line_aux, table_columns):
-        data = {i:[] for i in table_columns}
-        for l in line_aux:
-            for j in range(len(table_columns)):
-                try:
-                    data[table_columns[j]].append(l[j])
-                except:
-                    data[table_columns[j]].append(np.nan)
-        df = pd.DataFrame(data)
-
-        return df
