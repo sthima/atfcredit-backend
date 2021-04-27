@@ -48,8 +48,7 @@ class Bankruptcy(TextInterpreter):
         line_aux = new_lines
         df = self._build_df(line_aux, table_columns).reset_index(drop = True)
 
-        if len(df) >= 1:
-            return re.sub(' +', ' ', name_type.replace('\n','')), df
-        else:
-            return
-   
+        assert len(df) >= 1
+        
+        return re.sub(' +', ' ', name_type.replace('\n','')), df
+        

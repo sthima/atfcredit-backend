@@ -79,7 +79,9 @@ class PaymentsHistory(TextInterpreter):
         df = df.apply(clear_text, axis = 0 )  
         df = df.fillna(0)      
 
-        return re.sub(' +', ' ', name_type), df
+        assert len(df) >= 1
+        
+        return re.sub(' +', ' ', name_type.replace('\n','')), df
 
 class PaymentsHistoryMarket(TextInterpreter):
 
@@ -185,7 +187,9 @@ class PaymentsHistoryMarket(TextInterpreter):
         
 
         
-        return name_type, df
+        assert len(df) >= 1
+        
+        return re.sub(' +', ' ', name_type.replace('\n','')), df
 
 
 class PaymentsHistoryAssignor(TextInterpreter):
@@ -267,7 +271,9 @@ class PaymentsHistoryAssignor(TextInterpreter):
                 
                 df = df.append(pd.DataFrame([data]), ignore_index = True)
 
-            return name_type, df
+        assert len(df) >= 1
+        
+        return re.sub(' +', ' ', name_type.replace('\n','')), df
 
 
 

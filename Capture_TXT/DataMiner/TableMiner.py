@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import re
 
-from .PureTxt import *
+from .CleanTxt import *
 
 class TableMiner():
 
@@ -31,8 +31,7 @@ class TableMiner():
         except:
             self.print_error(name_type)
             return 
-            
-            
+              
     def get_RELATIONSHIP_WITH_MARKET(self):
         name_type = 'RELACIONAMENTO COM O MERCADO'
         try:
@@ -177,7 +176,5 @@ class TableMiner():
         try:
             return Bankruptcy().create_df(self.text, name_type)
         except Exception  as e:
-            print(e)
-
             self.print_error(name_type)
             return    
