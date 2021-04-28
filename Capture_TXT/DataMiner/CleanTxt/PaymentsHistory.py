@@ -92,7 +92,7 @@ class PaymentsHistoryMarket(TextInterpreter):
             '16-30_QTD','16-30_%',
             '31-60_QTD','31-60_%',
             '+60_QTD','+60_%',
-            'PMA A VISTA QTD','PMA A VISTA %','TOTAL']
+            'A_VISTA_QTD','A_VISTA_%','TOTAL']
 
         split_line =1
         vector_aux = text[text.find(name_type):].split('\n')
