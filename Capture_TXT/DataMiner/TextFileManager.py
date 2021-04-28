@@ -28,6 +28,7 @@ class TextFileManager():
                         
                         self.tm.get_PAYMENTS_HISTORY(),
                         self.tm.get_PAYMENTS_HISTORY_ASSIGNOR(),
+                        self.tm.get_PAYMENTS_HISTORY_IN_MARKET(),
 
                         self.tm.get_COMMITMENTS_EVOLUTION_ASSIGNOR(),
 
