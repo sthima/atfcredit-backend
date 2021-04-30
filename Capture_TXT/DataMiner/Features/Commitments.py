@@ -20,17 +20,26 @@ class Commitments():
 
 
     def growth_trend_consults(self, df, column):
-        rolling_avg = df[column].rolling(window=5).mean()[-3:]
-        mean = df[column].mean()
-        std = df[column].std()
+        try:
+            rolling_avg = df[column].rolling(window=5).mean()[-3:]
+            mean = df[column].mean()
+            std = df[column].std()
 
-        if len(rolling_avg[rolling_avg>= mean - std]) >= len(rolling_avg):
-            return 1
+            if len(rolling_avg[rolling_avg>= mean - std]) >= len(rolling_avg):
+                return 1
 
-        return 0
-
+            return 0
+        except:
+            return np.nan
+            
     def total_value_commitments(self, df, column):
-        return df[column].sum()
+        try:
+            return df[column].sum()
+        except:
+            return np.nan
 
     def count_commitments(self, df):
-        return len(df)
+        try:
+            return len(df)
+        except:
+            return np.nan

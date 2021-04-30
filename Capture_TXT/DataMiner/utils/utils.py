@@ -1,4 +1,5 @@
 
+from unidecode import unidecode
 import pandas as pd
 import numpy as np
 import os
@@ -6,7 +7,7 @@ import os
 
 def import_serasa_list():
     fundos_serasa = []
-    file_name = 'Lista de fundos na Serasa.txt'
+    file_name = 'DataMiner/Utils/Lista de fundos na Serasa.txt'
     with open(file_name) as infile:
         for line in infile: 
             aux = line.replace('\n','').strip().upper()
