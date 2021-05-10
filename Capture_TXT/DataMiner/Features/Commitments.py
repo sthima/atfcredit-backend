@@ -4,7 +4,11 @@ import numpy as np
 
 class Commitments():
     def create_feature(self, df):
-        aux_df = pd.DataFrame(df['EVOLUCAO DE COMPROMISSOS - VISAO CEDENTE (VALORES EM R$)'])
+        try:
+            aux_df = pd.DataFrame(df['EVOLUCAO DE COMPROMISSOS - VISAO CEDENTE (VALORES EM R$)'])
+        except:
+            return {'EVOLUCAO DE COMPROMISSOS - VISAO CEDENTE (VALORES EM R$)': np.nan}
+
         return {
             '7_TOTAL_COMMITMENTS': self.count_commitments(aux_df),
             '7_TEND_CRESCIMENTO_VENCIDOS': self.growth_trend_consults(aux_df, 'VENCIDOS'),
@@ -21,14 +25,12 @@ class Commitments():
 
     def growth_trend_consults(self, df, column):
         try:
-            rolling_avg = df[column].rolling(window=5).mean()[-3:]
-            mean = df[column].mean()
-            std = df[column].std()
-
-            if len(rolling_avg[rolling_avg>= mean - std]) >= len(rolling_avg):
+            trend_vector = df['QTD'].rolling(window=3).mean()[-3:].reset_index(drop = True)
+                    
+            if trend_vector[0] <= trend_vector[1] <= trend_vector[2]:
                 return 1
-
-            return 0
+            else: 
+                return 0
         except:
             return np.nan
             

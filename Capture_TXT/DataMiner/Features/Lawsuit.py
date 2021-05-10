@@ -4,7 +4,11 @@ import numpy as np
 
 class Lawsuit():
     def create_feature(self, df):
-        aux_df = pd.DataFrame(df['ACAO JUDICIAL'])
+        try:
+            aux_df = pd.DataFrame(df['ACAO JUDICIAL'])
+        except:
+            return {'ACAO JUDICIAL': np.nan}
+            
         aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
 
         return {'9_NATUREZA_MAIS_PRESENTE':self.most_present_lawsuit(aux_df),

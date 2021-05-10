@@ -4,8 +4,10 @@ import numpy as np
 
 class PaymentsHistory():
     def create_feature(self, df):
-
-        aux_df = pd.DataFrame(df['HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)'])
+        try:
+            aux_df = pd.DataFrame(df['HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)'])
+        except:
+            return {'HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)': np.nan}
 
         def get_value(x):
             try:

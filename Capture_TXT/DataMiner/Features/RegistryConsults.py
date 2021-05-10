@@ -4,21 +4,21 @@ import pandas as pd
 import numpy as np
 import json
 import os
-
-
+from ..Utils import fundos_serasa 
 
 class LastRegistryConsults():
 
-    def create_feature(self, df, fundos_serasa):
-        
-        self.fundos_serasa = fundos_serasa
-
-        aux_df = pd.DataFrame(df['CINCO ULTIMAS CONSULTAS'])
+    def create_feature(self, df):
+        try:
+            aux_df = pd.DataFrame(df['CINCO ULTIMAS CONSULTAS'])
+        except:
+            return {'CINCO ULTIMAS CONSULTAS': np.nan}
+            
         aux_df['QTD'] = aux_df['QTD'].astype(int)
         aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
 
         def search_factoring(name):
-            values = self.fundos_serasa.apply(lambda x: jf.levenshtein_distance(x, name))
+            values = fundos_serasa.apply(lambda x: jf.levenshtein_distance(x, name))
             result = values[values <= 4]
             if len(result) > 0:
                 return 1
@@ -58,7 +58,11 @@ class LastRegistryConsults():
 
 class RegistryConsults():
     def create_feature(self, df):
-        aux_df = pd.DataFrame(df['REGISTRO DE CONSULTAS'])
+        try:
+            aux_df = pd.DataFrame(df['REGISTRO DE CONSULTAS'])
+        except:
+            return {'REGISTRO DE CONSULTAS': np.nan}
+            
         aux_df['QTD'] = aux_df['QTD'].astype(int)
 
         return {'2_TENDENCIA_CRESCIMENTO':self.growth_trend_consults(aux_df),
@@ -69,14 +73,14 @@ class RegistryConsults():
 
     def growth_trend_consults(self, df):
         try:
-            rolling_avg = df['QTD'].rolling(window=5).mean()[-3:]
-            mean = df['QTD'].mean()
-            std = df['QTD'].std()
-            if len(rolling_avg[rolling_avg>= mean - std]) >= len(rolling_avg):
+            trend_vector = df['QTD'].rolling(window=3).mean()[-3:].reset_index(drop = True)
+                    
+            if trend_vector[0] <= trend_vector[1] <= trend_vector[2]:
                 return 1
-            return 0
+            else: 
+                return 0
         except:
-            return np.nan
+            return np.nan 
 
     def above_average(self, df):
         try:

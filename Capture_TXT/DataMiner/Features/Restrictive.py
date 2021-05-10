@@ -2,6 +2,8 @@ import jellyfish as jf
 import pandas as pd
 import numpy as np
 
+from ..Utils import fundos_serasa 
+
 
 class Restrictive():
     def last_debt(self,df):
@@ -41,7 +43,11 @@ class Restrictive():
 
 class REFIN(Restrictive):
     def create_feature(self, df):
-        aux_df = pd.DataFrame(df['REFIN'])
+        try:
+            aux_df = pd.DataFrame(df['REFIN'])
+        except:
+            return {'REFIN':np.nan}
+
         aux_df['VALOR'] = aux_df['VALOR'].apply(lambda x: x.replace('.','')).astype(int)
         aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
 
@@ -54,15 +60,17 @@ class REFIN(Restrictive):
 
 
 class PEFIN(Restrictive):
-    def create_feature(self, df, fundos_serasa):
-        self.fundos_serasa = fundos_serasa
+    def create_feature(self, df):
+        try:
+            aux_df = pd.DataFrame(df['PEFIN'])
+        except:
+            return {'PEFIN':np.nan}
 
-        aux_df = pd.DataFrame(df['PEFIN'])
         aux_df['VALOR'] = aux_df['VALOR'].apply(lambda x: x.replace('.','')).astype(int)
         aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
 
         def search_factoring(name):
-            values = self.fundos_serasa.apply(lambda x: jf.levenshtein_distance(x, name))
+            values = fundos_serasa.apply(lambda x: jf.levenshtein_distance(x, name))
             result = values[values <= 4]
             if len(result) > 0:
                 return 1
@@ -89,7 +97,11 @@ class PEFIN(Restrictive):
 
 class OverdueDebt(Restrictive):
     def create_feature(self, df):
-        aux_df = pd.DataFrame(df['DIVIDA VENCIDA'])
+        try:
+            aux_df = pd.DataFrame(df['DIVIDA VENCIDA'])
+        except:
+            return {'DIVIDA VENCIDA':np.nan}
+
         aux_df['VALOR'] = aux_df['VALOR'].apply(lambda x: x.replace('.','')).astype(int)
         aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
 

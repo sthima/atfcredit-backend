@@ -4,7 +4,10 @@ import numpy as np
 
 class Bankruptcy():
     def create_feature(self, df):
-        aux_df = pd.DataFrame(df['FALENCIA'])
+        try:
+            aux_df = pd.DataFrame(df['FALENCIA'])
+        except:
+            return {'FALENCIA': np.nan}
 
         return {'8_TOTAL_FALENCIA_REQ': self.bankruptcy_type_count(aux_df, 'REQ'),
                 '8_TOTAL_FALENCIA__CONC': self.bankruptcy_type_count(aux_df, 'CONC')

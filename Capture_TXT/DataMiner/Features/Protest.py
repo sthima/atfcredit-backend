@@ -4,7 +4,11 @@ import numpy as np
 
 class Protest():
     def create_feature(self, df):
-        aux_df = pd.DataFrame(df['PROTESTO'])
+        try:
+            aux_df = pd.DataFrame(df['PROTESTO'])
+        except:
+            return {'PROTESTO': np.nan}
+
         aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
         aux_df['VALOR'] = aux_df['VALOR'].apply(lambda x: x.replace('.',''))
         aux_df['VALOR'] = aux_df['VALOR'].astype(int)
