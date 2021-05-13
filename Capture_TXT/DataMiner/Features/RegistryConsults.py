@@ -69,6 +69,7 @@ class RegistryConsults():
                 '2_ACIMA_MEDIA':self.above_average(aux_df),
                 '2_TOTAL_CONSULTAS':self.total_weighted_consults(aux_df),
                 '2_TOTAL_CONSULTAS_PONDERADA':self.total_consults(aux_df),
+                '2_POSSUI_CRESCIMENTO':self.have_growth_consults(aux_df)
         }
 
     def growth_trend_consults(self, df):
@@ -80,7 +81,17 @@ class RegistryConsults():
             else: 
                 return 0
         except:
-            return np.nan 
+            return np.nan
+
+    def have_growth_consults(self, df):
+        try:
+            if df['QTD'].iloc[0] > (df['QTD'].median() + df['QTD'].median()*0.3)\
+                or df['QTD'].iloc[1] > (df['QTD'].median() + df['QTD'].median()*0.3):
+                return 1
+            else:
+                return 0
+        except:
+            return -1
 
     def above_average(self, df):
         try:

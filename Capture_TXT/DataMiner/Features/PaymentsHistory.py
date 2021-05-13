@@ -51,10 +51,30 @@ class PaymentsHistory():
         '6_PAGAMENTO_PERCENT_A_VISTA':self.percent_of_debt(aux_df,'A_VISTA_QTD'),
         '6_PAGAMENTO_VALOR_A_VISTA':self.total_of_debt_value(aux_df, 'A_VISTA_QTD'),
         '6_PAGAMENTO_TEND_CRES_A_VISTA':self.growth_trend_debt(aux_df, 'A_VISTA_QTD'),
+
+        '6_PRESENCA_PAGAMENTOS':self.weight_value(aux_df),
         }
 
 
-
+    def weight_value(self, df):
+        try:
+            score_count = 0
+            for i,j in df.iterrows():
+                if not(j['8-15_QTD'] is None):
+                    score_count+=0.3
+                    
+                if not(j['16-30_QTD'] is None):
+                    score_count+=0.5
+                    
+                if not(j['31-60_QTD'] is None):
+                    score_count+=0.7
+                    
+                if not(j['+60_QTD'] is None):
+                    score_count+=0.9
+                    
+            return score_count
+        except:
+            return np.nan
 
     def total_depts_count(self, df):
         try:
@@ -77,13 +97,11 @@ class PaymentsHistory():
 
     def growth_trend_debt(self, df,column):
         try:
-            rolling_avg = df[column].rolling(window=3).mean()[-3:]
-            mean = df[column].mean()
-            std = df[column].std()
-
-            if len(rolling_avg[rolling_avg>= mean - std]) >= len(rolling_avg):
+            trend_vector = df[column].rolling(window=3).mean()[-3:].reset_index(drop = True)
+                    
+            if trend_vector[0] <= trend_vector[1] <= trend_vector[2]:
                 return 1
-
-            return 0
+            else: 
+                return 0
         except:
             return np.nan
