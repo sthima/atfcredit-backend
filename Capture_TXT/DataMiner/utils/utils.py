@@ -2,6 +2,7 @@
 from unidecode import unidecode
 import pandas as pd
 import numpy as np
+import json
 import os
 
 
@@ -16,6 +17,16 @@ def import_serasa_list():
                 
     return pd.Series(fundos_serasa)
 
+class CustomEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(CustomEncoder, self).default(obj)
 
 
 fundos_serasa = import_serasa_list()
