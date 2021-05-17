@@ -42,3 +42,44 @@ class RegistryConsults(TextInterpreter):
             lines.append(self._capture_information(aux_line))
             
         return pd.DataFrame(lines)
+
+
+
+
+
+class RegistryLastFiveConsults(TextInterpreter):
+    def create_df(self, text):
+        df = self.create_df_by_text(text)
+        return 'CINCO ULTIMAS CONSULTAS', df.reset_index(drop = True)
+
+
+    def _capture_information(self, line):
+        line = line.replace('R302','')
+
+        date = pd.to_datetime(line[:8], format = "%Y%m%d")
+        name = line[8:]
+
+        return {'EMPRESA':name, \
+                'QTD':1,\
+                'DATA':date}
+
+
+    def create_df_by_text(self, text):
+        aux_text = text
+        lines = []
+
+        while True:
+            index_base = aux_text.find('R302')
+
+            if index_base <= 0:
+                break
+
+            index_aux = aux_text[index_base:].find('000')
+
+            aux_line = aux_text[index_base:index_base+index_aux]
+            aux_text = aux_text[index_base+index_aux:]
+            
+            print(aux_line)
+            lines.append(self._capture_information(aux_line))
+
+        return pd.DataFrame(lines)
