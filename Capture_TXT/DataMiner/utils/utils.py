@@ -36,12 +36,16 @@ class ClearText():
         for x in line:
             try:
                 if not(pd.isna(x)):
-                    x = x.replace('%', '')
-                    mult = 1
+                    
+                    mult = 1000
                     if x.find('MIL') >= 0:
                         mult = 1000
-                    else: 
+                    elif x.find('%') >= 0:
+                        mult = 1 
+                    elif x.find('M') >= 0 or x.find('MI') >= 0: 
                         mult = 1000000
+                    
+                    x = x.replace('%', '')
                     
                     numbers = x.split('A')
 
