@@ -80,7 +80,7 @@ class TableMiner():
 
     def get_PAYMENTS_HISTORY_IN_MARKET(self):
         name_type = 'HISTORICO DE PAGAMENTOS NO MERCADO'
-        if True:#try:
+        try:
             return self.TEXT_INTERPRETER.PaymentsHistoryMarket().create_df(self.text, name_type)
         except:
             self.print_error(name_type)
