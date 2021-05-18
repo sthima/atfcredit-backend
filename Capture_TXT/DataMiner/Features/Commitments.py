@@ -5,9 +5,9 @@ import numpy as np
 class Commitments():
     def create_feature(self, df):
         try:
-            aux_df = pd.DataFrame(df['EVOLUCAO DE COMPROMISSOS - VISAO CEDENTE (VALORES EM R$)'])
+            aux_df = pd.DataFrame(df['EVOLUCAO DE COMPROMISSOS - VISAO CEDENTE'])
         except:
-            return {'EVOLUCAO DE COMPROMISSOS - VISAO CEDENTE (VALORES EM R$)': np.nan}
+            return {'EVOLUCAO DE COMPROMISSOS - VISAO CEDENTE': np.nan}
 
         return {
             '7_TOTAL_COMMITMENTS': self.count_commitments(aux_df),
