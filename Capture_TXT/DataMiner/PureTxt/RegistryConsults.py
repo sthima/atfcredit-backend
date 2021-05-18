@@ -5,10 +5,8 @@ import re
 
 
 class RegistryConsults(TextInterpreter):
-    def create_df(self, text):
-
+    def create_df(self, text, name_type):
         df = self.create_df_by_text(text)
-
         return 'REGISTRO DE CONSULTAS', df.reset_index(drop = True)
 
     def _capture_information(self, line):
@@ -17,8 +15,8 @@ class RegistryConsults(TextInterpreter):
         month = line[2:4]
         qtd = line[8:line.find("000A")]
         
-        return {'MES':month+'/'+year,\
-                'searches':qtd}
+        return {'DATA':month+'/'+year,\
+                'QTD':qtd}
 
     def create_df_by_text(self, text):
         aux_text = text
@@ -48,7 +46,7 @@ class RegistryConsults(TextInterpreter):
 
 
 class RegistryLastFiveConsults(TextInterpreter):
-    def create_df(self, text):
+    def create_df(self, text, name_type):
         df = self.create_df_by_text(text)
         return 'CINCO ULTIMAS CONSULTAS', df.reset_index(drop = True)
 

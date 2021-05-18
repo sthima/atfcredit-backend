@@ -5,9 +5,9 @@ import re
 
 
 class Lawsuit(TextInterpreter):
-    def create_df(self, text):
+    def create_df(self, text, name_type):
         df = self.create_df_by_text(text)
-        return 'ACAO JUDICIAL', df.reset_index(drop = True)
+        return re.sub(' +', ' ', name_type.replace('\n','')), df.reset_index(drop = True)
 
 
     def _capture_information(self, text):

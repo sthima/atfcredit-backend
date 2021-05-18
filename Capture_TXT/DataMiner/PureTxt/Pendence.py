@@ -4,8 +4,8 @@ import re
 
 class Pendence(TextInterpreter):
     def create_df(self, text, name_type):
-        df = self.create_df_by_text(text, name_type)
-        return name_type, df.reset_index(drop = True)
+        df = self.create_df_by_text(text)
+        return re.sub(' +', ' ', name_type.replace('\n','')), df.reset_index(drop = True)
 
     def _capture_information(self, text):
         
