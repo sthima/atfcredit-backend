@@ -12,7 +12,7 @@ dbm = DataBaseManager()
 
 class TextFileManager():
     
-    def __init__(self, file_path, result):
+    def __init__(self, file_path, result, txt_type):
         text = ""
         with open(file_path) as infile:
             for line in infile:
@@ -22,21 +22,19 @@ class TextFileManager():
         self.file_path = file_path
         self.text = text
         self.cnpj = self.extract_cnpj(text)
-        self.tm = TableMiner(text)
+        self.tm = TableMiner(text, txt_type)
         
 
     def extract_cnpj(self, text):
         cpnj = text[text.find('CNPJ:'):].split('\n')[0]
         cpnj = cpnj.replace('CNPJ:','').strip()
-        return cpnj
+        return cpnj[:18]
 
     def create_tables_dict(self):
         tables_list = [self.tm.get_CONSULTATIONS_REGISTRATIONS(),
 
                         self.tm.get_LAST_FIVE_CONSULTATIONS_REGISTRATIONS(),
                         
-                        self.tm.get_PAYMENTS_HISTORY(),
-                        self.tm.get_PAYMENTS_HISTORY_ASSIGNOR(),
                         self.tm.get_PAYMENTS_HISTORY_IN_MARKET(),
 
                         self.tm.get_COMMITMENTS_EVOLUTION_ASSIGNOR(),

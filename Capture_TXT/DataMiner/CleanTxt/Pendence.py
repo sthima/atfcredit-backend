@@ -56,4 +56,4 @@ class Pendence(TextInterpreter):
         data_pendence = {'TOTAL DE OCORRENCIAS':[total_occurrence], 'VALOR TOTAL':[total_value]}
         pendence_df = pd.DataFrame(data_pendence)
         
-        return 'PENDENCIAS', pendence_df, name_type, pd.DataFrame(data)
+        return re.sub(' +', ' ', name_type.replace('\n','')), pd.DataFrame(data)

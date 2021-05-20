@@ -6,12 +6,13 @@ class Protest():
     def create_feature(self, df):
         try:
             aux_df = pd.DataFrame(df['PROTESTO'])
+            aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
+            aux_df['VALOR'] = aux_df['VALOR'].apply(lambda x: x.replace('.',''))
+            aux_df['VALOR'] = aux_df['VALOR'].astype(int)
         except:
             return {'PROTESTO': np.nan}
 
-        aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
-        aux_df['VALOR'] = aux_df['VALOR'].apply(lambda x: x.replace('.',''))
-        aux_df['VALOR'] = aux_df['VALOR'].astype(int)
+
 
         return{
             '10_TOTAL_PROTESTOS':self.total_protest(aux_df),

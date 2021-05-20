@@ -1,7 +1,9 @@
 from .TextInterpreter import TextInterpreter
+from ..Utils import ClearText 
 import pandas as pd
 import numpy as np
 import re
+
 
 
 class PaymentsHistory(TextInterpreter):
@@ -157,33 +159,9 @@ class PaymentsHistoryMarket(TextInterpreter):
         df = self._build_df(line_aux, table_columns).reset_index(drop = True)
 
 
-
-        def clear_text(line):
-            line_aux = []
-        
-            for x in line:
-                if not(pd.isna(x)):
-                    x = x.replace('%', '')
-                    numbers = x.split('A')
-                    
-                    numbers = [i.replace(',','.') for i in numbers]
-                    numbers = [i.replace('MIL','') for i in numbers]
-                    numbers = [i.replace('MI','') for i in numbers]
-                    numbers = [i.strip() for i in numbers]
-                    numbers = np.array(numbers)
-                    numbers = numbers[numbers!='']
-                    numbers = [float(i) for i in numbers]
-                    
-                    line_aux.append(numbers[0])
-                else:
-                    line_aux.append(0)
-                    
-            return pd.Series(line_aux)
-        
-
         if typ == 0:
             df = df.iloc[:-1]
-        df.loc[:,'PONTUAL_QTD':] = df.loc[:,'PONTUAL_QTD':].apply(clear_text, axis = 0 )
+        df.loc[:,'PONTUAL_QTD':] = df.loc[:,'PONTUAL_QTD':].apply(ClearText.convert_text_to_float, axis = 0 )
         
 
         

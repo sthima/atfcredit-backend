@@ -1,10 +1,16 @@
 import pandas as pd
 from .TextInterpreter import TextInterpreter
+from ..Utils import ClearText 
+import re
 
-class R451(TextInterpreter):
-    def _capture_information(self, aux_text):
+class CommitmentsAssignor(TextInterpreter):
+    def create_df(self, text, name_type):
+        df = self.create_df_by_text(text)
+        return re.sub(' +', ' ', name_type.replace('\n','')), df.reset_index(drop = True)
         
+    def _capture_information(self, aux_text):
         date = aux_text[4:9]
+
         index_base = aux_text.find("|")
         index_aux = aux_text[index_base+1:].find("|")
         vencido = aux_text[index_base:index_base+index_aux]
@@ -14,9 +20,15 @@ class R451(TextInterpreter):
         index_aux = aux_text.find("|")
         vencer = aux_text[:index_aux].strip()
         
-        return {'date':date,\
-                'overdue':vencido, \
-                'overcome':vencer}
+        index_base = aux_text.find("|")
+        index_aux = aux_text[index_base+1:].find("  ")
+        aux_text = aux_text[index_base:index_base+index_aux]
+        total = aux_text.split('|')[2]
+
+        return {'MES/ANO':date,\
+                'VENCIDOS':vencido, \
+                'A VENCER':vencer, \
+                'TOTAL': total}
 
 
     def create_df_by_text(self, text):
@@ -26,9 +38,8 @@ class R451(TextInterpreter):
 
         index_base = aux_text.find('R451MES/ANO  VENCIDOS                A VENCER                TOTAL')
         aux_text = aux_text[index_base+66:]
-        
+
         lines = []
-        
 
         while True:
             index_base = aux_text.find('R451')
@@ -39,12 +50,14 @@ class R451(TextInterpreter):
             index_aux = aux_text[index_base+4:].find("R452")
 
             aux_line = aux_text[index_base:index_base+index_aux]
-            
+
             if aux_line.find('TOTAL') > 0:
                 break
-                
+
             aux_text = aux_text[index_base+index_aux:]
+            lines.append(self._capture_information(aux_line))
             
-            lines.append(_capture_information(aux_line))
-            
-        return pd.DataFrame(lines)
+        df = pd.DataFrame(lines)
+        df.loc[:,'VENCIDOS':] = df.loc[:,'VENCIDOS':].apply(ClearText.convert_text_to_float, axis = 0 )
+
+        return df

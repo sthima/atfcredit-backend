@@ -4,10 +4,7 @@ import numpy as np
 
 class PaymentsHistory():
     def create_feature(self, df):
-        try:
-            aux_df = pd.DataFrame(df['HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)'])
-        except:
-            return {'HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)': np.nan}
+
 
         def get_value(x):
             try:
@@ -23,12 +20,18 @@ class PaymentsHistory():
                     return np.nan
                 except:
                     return np.nan
+        try:
+            aux_df = pd.DataFrame(df['HISTORICO DE PAGAMENTOS NO MERCADO'])
+            aux_df['8-15_QTD'] = aux_df['8-15_QTD'].apply(get_value)
+            aux_df['16-30_QTD'] = aux_df['16-30_QTD'].apply(get_value)
+            aux_df['31-60_QTD'] = aux_df['31-60_QTD'].apply(get_value)
+            aux_df['+60_QTD'] = aux_df['+60_QTD'].apply(get_value)
+            aux_df['A_VISTA_QTD'] = aux_df['A_VISTA_QTD'].apply(get_value)
+            
+        except:
+            return {'HISTORICO DE PAGAMENTOS NO MERCADO': np.nan}
 
-        aux_df['8-15_QTD'] = aux_df['8-15_QTD'].apply(get_value)
-        aux_df['16-30_QTD'] = aux_df['16-30_QTD'].apply(get_value)
-        aux_df['31-60_QTD'] = aux_df['31-60_QTD'].apply(get_value)
-        aux_df['+60_QTD'] = aux_df['+60_QTD'].apply(get_value)
-        aux_df['A_VISTA_QTD'] = aux_df['A_VISTA_QTD'].apply(get_value)
+        
 
         return {'6_TOTAL_PAGAMENTOS':self.total_depts_count(aux_df),
 

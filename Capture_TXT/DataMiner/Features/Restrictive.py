@@ -44,12 +44,13 @@ class Restrictive():
 class REFIN(Restrictive):
     def create_feature(self, df):
         try:
-            aux_df = pd.DataFrame(df['REFIN'])
+            aux_df = pd.DataFrame(df['REFIN']) 
+            aux_df['VALOR'] = aux_df['VALOR'].apply(lambda x: x.replace('.','')).astype(int)
+            aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
+
         except:
             return {'REFIN':np.nan}
 
-        aux_df['VALOR'] = aux_df['VALOR'].apply(lambda x: x.replace('.','')).astype(int)
-        aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
 
         return {'3_ULTIMA_MODALIDADE':self.last_debt(aux_df),
                 '3_MODALIDADE_MAIS_PRESENTE':self.most_present_debt(aux_df),
@@ -63,11 +64,13 @@ class PEFIN(Restrictive):
     def create_feature(self, df):
         try:
             aux_df = pd.DataFrame(df['PEFIN'])
+            aux_df['VALOR'] = aux_df['VALOR'].apply(lambda x: x.replace('.','')).astype(int)
+            aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
+
         except:
             return {'PEFIN':np.nan}
 
-        aux_df['VALOR'] = aux_df['VALOR'].apply(lambda x: x.replace('.','')).astype(int)
-        aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
+        
 
         def search_factoring(name):
             values = fundos_serasa.apply(lambda x: jf.levenshtein_distance(x, name))
@@ -99,11 +102,13 @@ class OverdueDebt(Restrictive):
     def create_feature(self, df):
         try:
             aux_df = pd.DataFrame(df['DIVIDA VENCIDA'])
+            aux_df['VALOR'] = aux_df['VALOR'].apply(lambda x: x.replace('.','')).astype(int)
+            aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')            
+            
         except:
             return {'DIVIDA VENCIDA':np.nan}
 
-        aux_df['VALOR'] = aux_df['VALOR'].apply(lambda x: x.replace('.','')).astype(int)
-        aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
+
 
         return {'5_ULTIMA_MODALIDADE':self.last_debt(aux_df),
                 '5_MODALIDADE_MAIS_PRESENTE':self.most_present_debt(aux_df),

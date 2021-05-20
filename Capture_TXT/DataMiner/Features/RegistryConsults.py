@@ -9,13 +9,6 @@ from ..Utils import fundos_serasa
 class LastRegistryConsults():
 
     def create_feature(self, df):
-        try:
-            aux_df = pd.DataFrame(df['CINCO ULTIMAS CONSULTAS'])
-        except:
-            return {'CINCO ULTIMAS CONSULTAS': np.nan}
-            
-        aux_df['QTD'] = aux_df['QTD'].astype(int)
-        aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
 
         def search_factoring(name):
             values = fundos_serasa.apply(lambda x: jf.levenshtein_distance(x, name))
@@ -27,7 +20,17 @@ class LastRegistryConsults():
                     return 1
             return 0
 
-        aux_df['IS_FACTORING'] = aux_df.apply(lambda x: search_factoring(x['EMPRESA']), axis = 1)
+        try:
+            aux_df = pd.DataFrame(df['CINCO ULTIMAS CONSULTAS'])
+            aux_df['QTD'] = aux_df['QTD'].astype(int)
+            aux_df['DATA'] = pd.to_datetime(aux_df['DATA'], errors = 'coerce', format = '%d/%m/%Y')
+
+            aux_df['IS_FACTORING'] = aux_df.apply(lambda x: search_factoring(x['EMPRESA']), axis = 1)
+
+        except:
+            return {'CINCO ULTIMAS CONSULTAS': np.nan}
+            
+
 
         return {
             '1_TOTAL_FACTORINGS': self.count_total_factoring(aux_df),
