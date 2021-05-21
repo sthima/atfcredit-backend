@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 import os
+import re
 
 from .TableMiner import TableMiner
 from .FeatureManager import FeatureManager
@@ -12,23 +13,22 @@ dbm = DataBaseManager()
 
 class TextFileManager():
     
-    def __init__(self, file_path, result, txt_type):
-        text = ""
-        with open(file_path) as infile:
-            for line in infile:
-                text += line
-
+    def __init__(self, text, file_path,txt_type, result = -1):
         self.result = result
         self.file_path = file_path
         self.text = text
         self.cnpj = self.extract_cnpj(text)
         self.tm = TableMiner(text, txt_type)
+        self.create_tables_dict()
+        self.create_features_by_tables()
+        self.save_txt_tables()
+        self.save_txt_features()
         
 
     def extract_cnpj(self, text):
         cpnj = text[text.find('CNPJ:'):].split('\n')[0]
         cpnj = cpnj.replace('CNPJ:','').strip()
-        return cpnj[:18]
+        return re.sub('[^A-Za-z0-9]+', '',cpnj[:18])
 
     def create_tables_dict(self):
         tables_list = [self.tm.get_CONSULTATIONS_REGISTRATIONS(),
@@ -75,7 +75,8 @@ class TextFileManager():
 
         self.features.update({'result': self.result,
                                 'cnpj':  self.cnpj,
-                                'txt_file': self.file_path})
+                                'txt_file': self.file_path,
+                                'prediction': -1})
 
         return self.features
 
