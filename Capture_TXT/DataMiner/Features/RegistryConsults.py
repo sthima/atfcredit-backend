@@ -63,10 +63,11 @@ class RegistryConsults():
     def create_feature(self, df):
         try:
             aux_df = pd.DataFrame(df['REGISTRO DE CONSULTAS'])
+            aux_df['QTD'] = aux_df['QTD'].astype(int)
         except:
             return {'REGISTRO DE CONSULTAS': np.nan}
             
-        aux_df['QTD'] = aux_df['QTD'].astype(int)
+        
 
         return {'2_TENDENCIA_CRESCIMENTO':self.growth_trend_consults(aux_df),
                 '2_ACIMA_MEDIA':self.above_average(aux_df),
