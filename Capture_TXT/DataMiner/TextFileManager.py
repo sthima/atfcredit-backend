@@ -18,6 +18,7 @@ class TextFileManager():
         self.file_path = file_path
         self.text = text
         self.cnpj = self.extract_cnpj(text)
+        self.date_consult = self.extract_date(text)
         self.tm = TableMiner(text, txt_type)
         self.create_tables_dict()
         self.create_features_by_tables()
@@ -29,6 +30,13 @@ class TextFileManager():
         cpnj = text[text.find('CNPJ:'):].split('\n')[0]
         cpnj = cpnj.replace('CNPJ:','').strip()
         return re.sub('[^A-Za-z0-9]+', '',cpnj[:18])
+
+    def extract_date(self, text):
+        try:
+            date = text[text.find('SITUACAO DO CNPJ EM'):].split(' ')[4].replace(':', '')
+            return pd.to_datetime(date, format= '%d/%m/%Y') 
+        except:
+            return np.nan
 
     def create_tables_dict(self):
         tables_list = [self.tm.get_CONSULTATIONS_REGISTRATIONS(),
@@ -61,7 +69,7 @@ class TextFileManager():
                     tables_obj[r[2]] = json.loads(r[3].to_json()) 
 
         tables_obj['ERROR'] = list(self.tm.erro_tables)
-
+        tables_obj['data_consulta'] = self.date_consult
         tables_obj['cnpj'] = self.cnpj
         tables_obj['txt_file'] = self.file_path
         tables_obj['result'] = int(self.result)
