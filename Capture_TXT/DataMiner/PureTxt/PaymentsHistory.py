@@ -58,6 +58,11 @@ class PaymentsHistoryMarket(TextInterpreter):
 
 
     def create_df_by_text(self, text):
+        def check_is_not_data(s):
+            if len(re.findall(r'[a-z,A-Z]', s)) <= 3  and len(re.findall("[0-9]", s)) <= 2:
+                return False
+            return True
+            
         aux_text = text
         index_base = aux_text.find('R451HISTORICO DE PAGAMENTOS NO MERCADO (VALORES EM R$)')
         aux_text = aux_text[index_base:]
@@ -87,11 +92,11 @@ class PaymentsHistoryMarket(TextInterpreter):
                 
             try:
                 new_line = self._capture_information(aux_line)
-                if 'TOTAL' in new_line['MES/ANO']:
+                if check_is_not_data(new_line['MES/ANO']):
                     break
                 lines.append(new_line)
             except:
-                break
+                continue
 
 
         df = pd.DataFrame(lines)
