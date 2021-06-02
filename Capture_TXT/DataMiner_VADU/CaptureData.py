@@ -11,6 +11,7 @@ import re
 import json
 import pandas as pd
 import time 
+import jellyfish as jf
 
 
 class VaduApi():
@@ -136,7 +137,7 @@ class VaduCrawler():
         cnpj_input.send_keys(Keys.ENTER)
 
     def necessary_update(self):
-        last_update = self.driver.find_element_by_xpath('//*[@id="tabProtestos"]/div/div[4]/div/div[5]/h5').text.strip()
+        last_update = self.driver.find_element_by_class_name('fonte-atualizacao.protestosConsultaDe').text.strip()
         
         def separet_number_and_letters(s):
             numbers = []
@@ -182,7 +183,7 @@ class VaduCrawler():
         
     def wait_load_button(self, delay = 60):
         try:
-            element = WebDriverWait(self.driver,delay).until(EC.element_to_be_clickable((By.ID, "btnAcaoAtualizarProtesto")))
+            element = WebDriverWait(self.driver,delay).until(EC.element_to_be_clickable((By.ID, "btnAcaoAtualizarProtestoV2")))
             return True
         except TimeoutException:
             return False
@@ -193,10 +194,29 @@ class VaduCrawler():
                                valor_protesto = None):
 
             return {'cnpj':cnpj,
-                'faturamento':faturamento,
-                'funcionarios':funcionarios,
-                'total_protesto':total_protesto,
-                'valor_protesto':valor_protesto}
+                'Faturamento':faturamento,
+                'Funcionarios':funcionarios,
+                'TotalProtesto':total_protesto,
+                'ValorProtesto':valor_protesto}
+
+    def creat_possibles_names_df(self):
+        cnpjs=[]
+        nomes=[]
+
+        tables=self.driver.find_elements_by_xpath('//*[@id="tableCadastro"]/tbody/tr')
+        for table in tables:
+            aux = table.find_elements_by_xpath("./td")
+            cnpjs.append(aux[0])
+            nomes.append(aux[1].text)
+            
+        return pd.DataFrame({'cnpjs':cnpjs, 'nomes':nomes})
+
+    def select_best_name(self, cnpj):
+        possiveis_cnpjs = self.creat_possibles_names_df()
+        possiveis_cnpjs['nomes'] = possiveis_cnpjs['nomes'].apply(lambda x: re.sub(' +', ' ',re.sub(r'[^\w\s]','',x)).strip())
+        possiveis_cnpjs['dist_cnpj'] = possiveis_cnpjs['nomes'].apply(lambda x: jf.levenshtein_distance(x, cnpj)) 
+        possiveis_cnpjs = possiveis_cnpjs.sort_values('dist_cnpj').reset_index(drop = True)
+        possiveis_cnpjs['cnpjs'].iloc[0].click()
         
     def capture_VADU_info(self, cnpj):
         self.driver.get(self.VADU_SITE_HOST)
@@ -204,8 +224,12 @@ class VaduCrawler():
         self.close_modal()
 
         self.search_cnpj(cnpj)
-        result_search = self.driver.find_elements_by_id('ResultadoBusca')
         
+
+        if len(self.driver.find_elements_by_xpath('//*[@id="tableCadastro"]/tbody/tr')):
+            self.select_best_name(cnpj)
+        
+        result_search = self.driver.find_elements_by_id('ResultadoBusca')
         if len(result_search):
             if result_search.text == 'Pesquisa sem resultados':
                 print('DEU ERRO 1')
@@ -217,17 +241,19 @@ class VaduCrawler():
         
         protest_button = WebDriverWait(self.driver,5).until(EC.presence_of_element_located((By.XPATH, '//a[@href="#tabProtestos"]')))
         protest_button.click()
+
         if not(self.wait_load()):
-                return self.DEFAULT_OBJ(cnpj)
+            print('DEMOROU DMAIS')
+            return self.DEFAULT_OBJ(cnpj)
         
         if self.necessary_update():
-            self.driver.find_element_by_id('btnAcaoAtualizarProtesto').click()
+            self.driver.find_element_by_id('btnAcaoAtualizarProtestoV2').click()
             if not(self.wait_load_button()):
                 print('DEU ERRO 2')
                 return self.DEFAULT_OBJ(cnpj)
         
         total_protesto = self.driver.find_element_by_class_name('totalProtestos').text
-        valor_protesto = self.driver.find_element_by_class_name('valor-total-protestos').text
+        valor_protesto = self.driver.find_element_by_class_name('valor-total-protestos').text.replace('R$','').strip()
         self.driver.close()
         
         return self.DEFAULT_OBJ(cnpj,faturamento,funcionarios,total_protesto,valor_protesto)
@@ -242,6 +268,7 @@ class VaduCrawler():
                 vadu_infos.append(self.capture_VADU_info(cnpj_vector[i]))
                 return self.fill_info_vector( cnpj_vector, i+1, vadu_infos)
             except Exception as e:
+                print(str(e))
                 try:
                     self.driver.close()
                 except:
