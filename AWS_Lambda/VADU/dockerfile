@@ -1,0 +1,25 @@
+FROM public.ecr.aws/lambda/python:3.8
+
+RUN yum install -y python3 python3-pip
+# RUN yum install -y chromium-browser
+
+COPY requirements.txt requirements.txt
+RUN python3 -m pip install -r requirements.txt
+RUN python3 -m pip install awscli --upgrade --user
+
+COPY ./Modules   ./Modules
+
+
+# ENV PATH = /var/task/bin
+# ENV PYTHONPATH = /var/task/src:/var/task/lib
+ENV AWS_ACCESS_KEY_ID=AKIASO6QZ67S5SAU7GCA
+ENV AWS_SECRET_ACCESS_KEY=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
+ENV AWS_DEFAULT_REGION=us-east-2
+
+
+COPY headless-chromium ./
+COPY chromedriver   ./
+COPY app.py   ./
+
+RUN curl https://intoli.com/install-google-chrome.sh | bash
+CMD ["app.handler"]      
