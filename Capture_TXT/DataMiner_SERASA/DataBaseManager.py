@@ -38,4 +38,17 @@ class DataBaseManager():
             newvalues = { "$set": { "prediction": j['prediction'] } }
 
             self.__get_mycol(collection).update_one(myquery, newvalues)
+
+
+    def _set_change_result(self, cnpj, result ,collection = 'Txt_features'):
+        myquery = { "cnpj": cnpj }
+        newvalues = { "$set": { "result ": result  } }
+        self.__get_mycol(collection).update_one(myquery, newvalues)
+
+
+    def set_positive_result(self, cnpj):
+        self._set_change_result(cnpj, 1)
+
+    def set_negative_result(self, cnpj):
+        self._set_change_result(cnpj, 0)
     

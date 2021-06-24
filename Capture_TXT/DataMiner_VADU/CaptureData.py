@@ -59,7 +59,7 @@ class VaduCrawler():
         self.SENHA = "Score@123"
         self.TEMPO_ATT_PROTESTO = 3
         self.NUMBER_OF_TRY = 3
-        self.VADU_SITE_HOST = "http://3.218.228.126/vadu.dll"
+        self.VADU_SITE_HOST = "https://www.vadu.com.br/vadu.dll/Autenticacao/Entrar"
 
 
         if type(cnpj) == type([]):
@@ -116,12 +116,14 @@ class VaduCrawler():
         if len(self.driver.find_elements_by_class_name('g-recaptcha-outer')):
             self.driver.close()
             
-            aux_driver = webdriver.Firefox()
-            aux_driver.get(self.VADU_SITE_HOST)
-            self.make_login(aux_driver)
-            self.close_modal(aux_driver)
-            aux_driver.close()
-            
+            # aux_driver = webdriver.Firefox()
+            # aux_driver.get(self.VADU_SITE_HOST)
+            # self.make_login(aux_driver)
+            # self.close_modal(aux_driver)
+            # aux_driver.close()
+            print('FAÇA O LOGIN DE FORMA MANUAL')
+            input()
+
             self.driver = self.open_vadu_web_site()
         
         self.make_login()
@@ -172,7 +174,7 @@ class VaduCrawler():
     def wait_load(self, delay = 60):
         try:
             start = time.time()
-            while self.driver.find_element_by_class_name('valor-total-protestos').text == '' or (time.time() - start) > delay:
+            while self.driver.find_element_by_class_name('totalProtestos').text == '' or (time.time() - start) > delay:
                 self.driver.find_element_by_xpath('//a[@href="#tabProtestos"]').click()
                 if self.driver.find_element_by_class_name('totalProtestos').text == '?':
                     break

@@ -11,40 +11,48 @@ class ClearData():
                                     '5_MODALIDADE_MAIS_PRESENTE','5_ULTIMA_MODALIDADE',
                                     '9_NATUREZA_MAIS_PRESENTE']
 
-        self.COLUMNS_TO_DROP = ['_id','cnpj','txt_file','result','prediction']
+        
+        self.serasa_columns = ['10_FREQUENCIA_PROTESTO', '10_MEDIA_VALOR', '10_STD_VALOR',
+                               '10_TOTAL_PROTESTOS', '1_FREQUENCIA_CONSULTAS',
+                               '1_FREQUENCIA_CONSULTAS_FACTORING', '1_TOTAL_FACTORINGS',
+                               '2_ACIMA_MEDIA', '2_POSSUI_CRESCIMENTO', '2_TENDENCIA_CRESCIMENTO',
+                               '2_TOTAL_CONSULTAS', '2_TOTAL_CONSULTAS_PONDERADA',
+                               '3_FREQUENCIA_DEBITO', '3_MODALIDADE_MAIS_PRESENTE',
+                               '3_QUANTIDADE_DEBITO', '3_ULTIMA_MODALIDADE', '3_VALOR_DEBITO',
+                               '4_FREQUENCIA_DEBITO', '4_MODALIDADE_MAIS_PRESENTE',
+                               '4_QUANTIDADE_DEBITO', '4_TOTAL_FACTORINGS_DEBITO',
+                               '4_ULTIMA_MODALIDADE', '4_VALOR_DEBITO', '5_FREQUENCIA_DEBITO',
+                               '5_MODALIDADE_MAIS_PRESENTE', '5_QUANTIDADE_DEBITO',
+                               '5_ULTIMA_MODALIDADE', '5_VALOR_DEBITO', '6_PAGAMENTO_PERCENT_+60',
+                               '6_PAGAMENTO_PERCENT_15', '6_PAGAMENTO_PERCENT_30',
+                               '6_PAGAMENTO_PERCENT_60', '6_PAGAMENTO_PERCENT_A_VISTA',
+                               '6_PAGAMENTO_TEND_CRES_+60', '6_PAGAMENTO_TEND_CRES_15',
+                               '6_PAGAMENTO_TEND_CRES_30', '6_PAGAMENTO_TEND_CRES_60',
+                               '6_PAGAMENTO_TEND_CRES_A_VISTA', '6_PAGAMENTO_VALOR_+60',
+                               '6_PAGAMENTO_VALOR_15', '6_PAGAMENTO_VALOR_30', '6_PAGAMENTO_VALOR_60',
+                               '6_PAGAMENTO_VALOR_A_VISTA', '6_PRESENCA_PAGAMENTOS',
+                               '6_TOTAL_PAGAMENTOS', '7_POSSUI_CRESCIMENTO',
+                               '7_TEND_CRESCIMENTO_A_VENCER', '7_TEND_CRESCIMENTO_TOTAL',
+                               '7_TEND_CRESCIMENTO_VENCIDOS', '7_TOTAL_COMMITMENTS',
+                               '7_VALOR_TOTAL_A_VENCER', '7_VALOR_TOTAL_TOTAL',
+                               '7_VALOR_TOTAL_VENCIDOS', '8_TOTAL_FALENCIA_REQ',
+                               '8_TOTAL_FALENCIA__CONC', '9_FREQUENCIA_ACAO_JUDICIAL',
+                               '9_NATUREZA_MAIS_PRESENTE', '9_TOTAL_ACAO_JUDICIAL', '9_VALOR_TOTAL',
+                               'ACAO JUDICIAL', 'DIVIDA VENCIDA', 'FALENCIA',
+                               'HISTORICO DE PAGAMENTOS NO MERCADO', 'PEFIN', 'PROTESTO', 'REFIN',
+                               '_id', 'classification', 'cnpj', 'prediction', 'result']
 
     def _creat_all_columns(self, df):
-        columns_primary = ['8_TOTAL_FALENCIA_REQ', '8_TOTAL_FALENCIA__CONC',
-                    '7_TOTAL_COMMITMENTS', '7_TEND_CRESCIMENTO_VENCIDOS',
-                    '7_VALOR_TOTAL_VENCIDOS', '7_TEND_CRESCIMENTO_A_VENCER',
-                    '7_VALOR_TOTAL_A_VENCER', '7_TEND_CRESCIMENTO_TOTAL',
-                    '7_VALOR_TOTAL_TOTAL', '7_POSSUI_CRESCIMENTO',
-                    '6_TOTAL_PAGAMENTOS', '6_PAGAMENTO_PERCENT_15', '6_PAGAMENTO_VALOR_15',
-                    '6_PAGAMENTO_TEND_CRES_15', '6_PAGAMENTO_PERCENT_30',
-                    '6_PAGAMENTO_VALOR_30', '6_PAGAMENTO_TEND_CRES_30',
-                    '6_PAGAMENTO_PERCENT_60', '6_PAGAMENTO_VALOR_60',
-                    '6_PAGAMENTO_TEND_CRES_60', '6_PAGAMENTO_PERCENT_+60',
-                    '6_PAGAMENTO_VALOR_+60', '6_PAGAMENTO_TEND_CRES_+60',
-                    '6_PAGAMENTO_PERCENT_A_VISTA', '6_PAGAMENTO_VALOR_A_VISTA',
-                    '6_PAGAMENTO_TEND_CRES_A_VISTA', '6_PRESENCA_PAGAMENTOS', 'PROTESTO',
-                    '1_TOTAL_FACTORINGS', '1_FREQUENCIA_CONSULTAS',
-                    '1_FREQUENCIA_CONSULTAS_FACTORING', '2_TENDENCIA_CRESCIMENTO',
-                    '2_ACIMA_MEDIA', '2_TOTAL_CONSULTAS', '2_TOTAL_CONSULTAS_PONDERADA',
-                    '2_POSSUI_CRESCIMENTO','10_TOTAL_PROTESTOS',
-                    '10_STD_VALOR', '10_MEDIA_VALOR', '10_FREQUENCIA_PROTESTO',
-                    '3_ULTIMA_MODALIDADE', '3_MODALIDADE_MAIS_PRESENTE',
-                    '3_FREQUENCIA_DEBITO', '3_VALOR_DEBITO', '3_QUANTIDADE_DEBITO',
-                    '4_ULTIMA_MODALIDADE', '4_MODALIDADE_MAIS_PRESENTE',
-                    '4_FREQUENCIA_DEBITO', '4_VALOR_DEBITO', '4_QUANTIDADE_DEBITO',
-                    '4_TOTAL_FACTORINGS_DEBITO', '5_ULTIMA_MODALIDADE',
-                    '5_MODALIDADE_MAIS_PRESENTE', '5_FREQUENCIA_DEBITO', '5_VALOR_DEBITO',
-                    '5_QUANTIDADE_DEBITO', '9_NATUREZA_MAIS_PRESENTE',
-                    '9_TOTAL_ACAO_JUDICIAL', '9_VALOR_TOTAL', '9_FREQUENCIA_ACAO_JUDICIAL']
-
-        for c in columns_primary:
+        for c in self.serasa_columns:
             if c not in df.columns:
                 df[c] = np.nan
-
+    
+        columns_drop = []
+        for c in df.columns:
+            if c not in self.serasa_columns:
+                columns_drop.append(c)
+                
+        df = df.drop(columns = columns_drop)
         return df
 
 
@@ -81,6 +89,7 @@ class ClearData():
 
         df = self.origin_df.copy()
         df = self._creat_all_columns(df)
+        
         df['1_FREQUENCIA_CONSULTAS'] = df['1_FREQUENCIA_CONSULTAS'].apply(frequency_type)
         df['1_FREQUENCIA_CONSULTAS_FACTORING'] = df['1_FREQUENCIA_CONSULTAS_FACTORING'].apply(frequency_type)
         df['1_FREQUENCIA_CONSULTAS'] = df['1_FREQUENCIA_CONSULTAS'].fillna(0)
@@ -91,6 +100,7 @@ class ClearData():
         df['2_ACIMA_MEDIA'] = df['2_ACIMA_MEDIA'].fillna(-1)
         df['2_TOTAL_CONSULTAS_PONDERADA'] = df['2_TOTAL_CONSULTAS_PONDERADA'].fillna(0)
         df['2_POSSUI_CRESCIMENTO'] = df['2_POSSUI_CRESCIMENTO'].fillna(-1)
+        df['2_TOTAL_CONSULTAS'] = df['2_TOTAL_CONSULTAS'].fillna(0)
 
         df['3_FREQUENCIA_DEBITO'] = df['3_FREQUENCIA_DEBITO'].apply(frequency_type)
         df['3_FREQUENCIA_DEBITO'] = df['3_FREQUENCIA_DEBITO'].fillna(0)
@@ -150,13 +160,12 @@ class ClearData():
         df['10_MEDIA_VALOR'] = df['10_MEDIA_VALOR'].fillna(0)
         df['10_STD_VALOR'] = df['10_STD_VALOR'].fillna(0)
         df['10_TOTAL_PROTESTOS'] = df['10_TOTAL_PROTESTOS'].fillna(0)
-
         dict_modalidades = convert_modalidades(df, self.MODALIDADE_COLUMNS)
         df[self.MODALIDADE_COLUMNS] = df[self.MODALIDADE_COLUMNS].replace(dict_modalidades)
         df[self.MODALIDADE_COLUMNS] = df[self.MODALIDADE_COLUMNS].fillna(0)
 
-
-        column_to_drop = ['ACAO JUDICIAL','DIVIDA VENCIDA','2_TOTAL_CONSULTAS'                                          
+        column_to_drop = ['ACAO JUDICIAL','DIVIDA VENCIDA',
+                          'prediction','classification',
                         'FALENCIA','PEFIN','HISTORICO DE PAGAMENTOS NO MERCADO',       
                         'CINCO ULTIMAS CONSULTAS','PROTESTO','REFIN','REGISTRO DE CONSULTAS']
 
@@ -166,14 +175,5 @@ class ClearData():
             except:
                 pass
 
-        df_scaled = df.copy()
-        scaler = StandardScaler()
-
-        df_scaled = df_scaled.drop(columns = self.COLUMNS_TO_DROP)
-        df_scaled=pd.DataFrame(scaler.fit_transform(df_scaled), columns=df_scaled.columns)
-
-        df_scaled[self.COLUMNS_TO_DROP] = df[self.COLUMNS_TO_DROP]
-
-        self.df_clean = df_scaled.dropna(axis=1)
-
-        return self.df_clean
+        df = df.dropna().reset_index(drop = True)
+        return df
