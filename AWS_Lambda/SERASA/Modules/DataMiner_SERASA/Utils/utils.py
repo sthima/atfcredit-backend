@@ -8,7 +8,7 @@ import json
 def import_serasa_list():
     s3 = boto3.client('s3')
 
-    bucket = 'teste-lambda-atf'
+    bucket = 'lambda-atf-sthima'
     key = 'Lista de fundos na Serasa.txt'
 
     response = s3.get_object(Bucket=bucket, Key=key)
