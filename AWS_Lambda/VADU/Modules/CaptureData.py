@@ -26,7 +26,7 @@ class VaduApi():
 
     def capture_data(self):
         url = "https://www.vadu.com.br/vadu.dll/ServicoAnaliseOperacao/Consulta/{}"
-        api_columns = ['CnpjCpf', 'Nome', 'UfEndereco','ReceitaSituacao','ReceitaAbertura','ReceitaNaturezaJuridica','ReceitaSituacaoEspecial','ReceitaCapitalSocial','OpcaoTributaria','Porte','ReceitaAtividade']
+        api_columns = ['CnpjCpf', 'Nome', 'UfEndereco','ReceitaSituacao','ReceitaAbertura','ReceitaNaturezaJuridica','ReceitaSituacaoEspecial','ReceitaCapitalSocial','Porte','ReceitaAtividade']
 
         payload={}
         headers = {
@@ -88,7 +88,7 @@ class VaduCrawler():
         options.add_argument('headless')
         options.add_argument('--no-sandbox')
         options.add_argument("window-size=1920x1080")
-        driver = webdriver.Chrome('./chromedriver', chrome_options=options)
+        driver = webdriver.Chrome(chrome_options=options)
         driver.get(self.VADU_SITE_HOST)
         return driver
 
