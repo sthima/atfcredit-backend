@@ -93,8 +93,15 @@ class VaduCrawler():
         return driver
 
         
-        
-    def close_modal(self):
+    def close_modal1(self):
+        close_button = self.driver.find_elements_by_id("naoAbreAbaSCR")
+        if len(close_button):
+            try:
+                close_button[0].click()
+            except:
+                pass
+
+    def close_modal2(self):
         close_button = self.driver.find_elements_by_id("naoRedirecionaInfoCredit")
         if len(close_button):
             try:
@@ -118,15 +125,6 @@ class VaduCrawler():
         self.driver.get(self.VADU_SITE_HOST)
         if len(self.driver.find_elements_by_class_name('g-recaptcha-outer')):
             self.driver.close()
-            
-            # aux_driver = webdriver.Firefox()
-            # aux_driver.get(self.VADU_SITE_HOST)
-            # self.make_login(aux_driver)
-            # self.close_modal(aux_driver)
-            # aux_driver.close()
-            print('FAÇA O LOGIN DE FORMA MANUAL')
-            input()
-
             self.driver = self.open_vadu_web_site()
         
         self.make_login()
@@ -226,7 +224,8 @@ class VaduCrawler():
     def capture_VADU_info(self, cnpj):
         self.driver.get(self.VADU_SITE_HOST)
         self.login()
-        self.close_modal()
+        self.close_modal1()
+        self.close_modal2()
 
         self.search_cnpj(cnpj)
         
