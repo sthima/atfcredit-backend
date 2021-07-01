@@ -172,19 +172,22 @@ class VaduCrawler():
             return False
 
 
-    def wait_load(self, delay = 60):
+    def wait_load(self, delay = 300):
         try:
             start = time.time()
-            while self.driver.find_element_by_class_name('totalProtestos').text == '' or (time.time() - start) > delay:
+            while self.driver.find_element_by_class_name('totalProtestos').text == '' and (time.time() - start) < delay:
                 self.driver.find_element_by_xpath('//a[@href="#tabProtestos"]').click()
                 if self.driver.find_element_by_class_name('totalProtestos').text == '?':
-                    break
+                    return True
+                    # break
+            
+            if (time.time() - start) > delay:
+                return False
 
-            return True
         except TimeoutException:
             return False
         
-    def wait_load_button(self, delay = 60):
+    def wait_load_button(self, delay = 300):
         try:
             element = WebDriverWait(self.driver,delay).until(EC.element_to_be_clickable((By.ID, "btnAcaoAtualizarProtestoV2")))
             return True
@@ -284,5 +287,3 @@ class VaduCrawler():
                 else:
                     return self.fill_info_vector( cnpj_vector, i, vadu_infos, n_try)
 
-
-        

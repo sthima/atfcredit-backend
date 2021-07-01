@@ -13,9 +13,8 @@ dbm = DataBaseManager()
 
 class TextFileManager():
     
-    def __init__(self, text, file_path,txt_type, result = -1):
+    def __init__(self, text, txt_type, result = -1):
         self.result = result
-        self.file_path = file_path
         self.text = text
         self.cnpj = self.extract_cnpj(text)
         self.date_consult = self.extract_date(text)
@@ -71,7 +70,6 @@ class TextFileManager():
         tables_obj['ERROR'] = list(self.tm.erro_tables)
         tables_obj['data_consulta'] = self.date_consult
         tables_obj['cnpj'] = self.cnpj
-        tables_obj['txt_file'] = self.file_path
         tables_obj['result'] = int(self.result)
         
         self.tables_obj = tables_obj
@@ -82,8 +80,8 @@ class TextFileManager():
         self.features = FeatureManager(self.tables_obj).get_features()
 
         self.features.update({'result': self.result,
+                                'data_consulta': self.date_consult,
                                 'cnpj':  self.cnpj,
-                                'txt_file': self.file_path,
                                 'prediction': -1})
 
         return self.features
