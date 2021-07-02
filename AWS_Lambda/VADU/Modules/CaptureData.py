@@ -177,12 +177,13 @@ class VaduCrawler():
             start = time.time()
             while self.driver.find_element_by_class_name('totalProtestos').text == '' and (time.time() - start) < delay:
                 self.driver.find_element_by_xpath('//a[@href="#tabProtestos"]').click()
-                if self.driver.find_element_by_class_name('totalProtestos').text == '?':
+                if len(self.driver.find_element_by_class_name('totalProtestos').text) > 0:
                     return True
                     # break
             
             if (time.time() - start) > delay:
                 return False
+
 
         except TimeoutException:
             return False
@@ -248,7 +249,8 @@ class VaduCrawler():
         
         protest_button = WebDriverWait(self.driver,5).until(EC.presence_of_element_located((By.XPATH, '//a[@href="#tabProtestos"]')))
         protest_button.click()
-
+        
+        time.sleep(1)
         if not(self.wait_load()):
             print('DEMOROU DMAIS')
             return self.DEFAULT_OBJ(cnpj, faturamento=faturamento, funcionarios=funcionarios)
