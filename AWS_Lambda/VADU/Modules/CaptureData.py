@@ -251,13 +251,13 @@ class VaduCrawler():
 
         if not(self.wait_load()):
             print('DEMOROU DMAIS')
-            return self.DEFAULT_OBJ(cnpj)
+            return self.DEFAULT_OBJ(cnpj, faturamento=faturamento, funcionarios=funcionarios)
         
         if self.necessary_update():
             self.driver.find_element_by_id('btnAcaoAtualizarProtestoV2').click()
             if not(self.wait_load_button()):
                 print('DEU ERRO 2')
-                return self.DEFAULT_OBJ(cnpj)
+                return self.DEFAULT_OBJ(cnpj, faturamento=faturamento, funcionarios=funcionarios)
         
         total_protesto = self.driver.find_element_by_class_name('totalProtestos').text
         valor_protesto = self.driver.find_element_by_class_name('valor-total-protestos').text.replace('R$','').strip()
