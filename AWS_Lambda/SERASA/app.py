@@ -1,8 +1,85 @@
 from Modules.DataMiner_SERASA import TextFileManager, CustomEncoder
 import json
+import pymongo 
+import re
 import pandas as pd
+import numpy as np 
+
+serasa_columns = ['8_TOTAL_FALENCIA_REQ', '8_TOTAL_FALENCIA__CONC', '7_TOTAL_COMMITMENTS',
+       '7_TEND_CRESCIMENTO_VENCIDOS', '7_VALOR_TOTAL_VENCIDOS',
+       '7_TEND_CRESCIMENTO_A_VENCER', '7_VALOR_TOTAL_A_VENCER',
+       '7_TEND_CRESCIMENTO_TOTAL', '7_VALOR_TOTAL_TOTAL',
+       '7_POSSUI_CRESCIMENTO', 'ACAO JUDICIAL',
+       'HISTORICO DE PAGAMENTOS NO MERCADO', 'PROTESTO',
+       'CINCO ULTIMAS CONSULTAS', '2_TENDENCIA_CRESCIMENTO', '2_ACIMA_MEDIA',
+       '2_TOTAL_CONSULTAS', '2_TOTAL_CONSULTAS_PONDERADA',
+       '2_POSSUI_CRESCIMENTO', 'REFIN', 'PEFIN', 'DIVIDA VENCIDA',
+       'data_consulta','6_TOTAL_PAGAMENTOS', '6_PAGAMENTO_PERCENT_15',
+       '6_PAGAMENTO_VALOR_15', '6_PAGAMENTO_TEND_CRES_15',
+       '6_PAGAMENTO_PERCENT_30', '6_PAGAMENTO_VALOR_30',
+       '6_PAGAMENTO_TEND_CRES_30', '6_PAGAMENTO_PERCENT_60',
+       '6_PAGAMENTO_VALOR_60', '6_PAGAMENTO_TEND_CRES_60',
+       '6_PAGAMENTO_PERCENT_+60', '6_PAGAMENTO_VALOR_+60',
+       '6_PAGAMENTO_TEND_CRES_+60', '6_PAGAMENTO_PERCENT_A_VISTA',
+       '6_PAGAMENTO_VALOR_A_VISTA', '6_PAGAMENTO_TEND_CRES_A_VISTA',
+       '6_PRESENCA_PAGAMENTOS', '1_TOTAL_FACTORINGS', '1_FREQUENCIA_CONSULTAS',
+       '1_FREQUENCIA_CONSULTAS_FACTORING', '10_TOTAL_PROTESTOS',
+       '10_STD_VALOR', '10_MEDIA_VALOR', '10_FREQUENCIA_PROTESTO',
+       '9_NATUREZA_MAIS_PRESENTE', '9_TOTAL_ACAO_JUDICIAL', '9_VALOR_TOTAL',
+       '9_FREQUENCIA_ACAO_JUDICIAL', '3_ULTIMA_MODALIDADE',
+       '3_MODALIDADE_MAIS_PRESENTE', '3_FREQUENCIA_DEBITO', '3_VALOR_DEBITO',
+       '3_QUANTIDADE_DEBITO', '4_ULTIMA_MODALIDADE',
+       '4_MODALIDADE_MAIS_PRESENTE', '4_FREQUENCIA_DEBITO', '4_VALOR_DEBITO',
+       '4_QUANTIDADE_DEBITO', '4_TOTAL_FACTORINGS_DEBITO',
+       '5_ULTIMA_MODALIDADE', '5_MODALIDADE_MAIS_PRESENTE',
+       '5_FREQUENCIA_DEBITO', '5_VALOR_DEBITO', '5_QUANTIDADE_DEBITO','REGISTRO DE CONSULTAS',
+       'FALENCIA']
+
+class CustomEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(CustomEncoder, self).default(obj)
+
+def creat_dict(dic, columns):
+    new_dic = {}
+    for i in columns:
+        if i in dic.keys():
+            new_dic[i] = dic[i]
+    return new_dic
+
+def save_serasa_infos(df_final):
+    # aux_data = json.dumps(df_final.iloc[0].to_dict(),cls=CustomEncoder)
+    serasa_dict = creat_dict(df_final, serasa_columns)
+    new_dict = {}
+
+    new_dict['cnpj'] =re.sub(r'[^\w\s]','',df_final['cnpj'])  
+    new_dict['serasa_info'] = serasa_dict
+    new_dict['resultado'] = df_final['result']
+
+    data_dict_1 = json.dumps(new_dict, cls=CustomEncoder)
+    data_dict_final  = json.loads(data_dict_1)
+
+    query = {'cnpj':new_dict['cnpj']}
+    key = {'$set': data_dict_final}
+
+
+    CONNETCION_MONGO = "mongodb+srv://atfUser:mvOX8tCv5Tv4pvJU@atfcluster.t51do.mongodb.net/test"
+    myclient = pymongo.MongoClient(CONNETCION_MONGO)
+    mydb = myclient["atf_score"]
+    mycol = mydb['feature-collection']
+    mycol.find_one_and_update(query,key,upsert=True)
+
+    return data_dict_final
+
 def handler(event, context):
     tfm = TextFileManager(event['text'], event['txt_type'], event['result'])
+    save_serasa_infos(tfm.features)
     return {"features":json.dumps(tfm.features, cls=CustomEncoder)}    
 
 

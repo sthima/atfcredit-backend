@@ -6,6 +6,7 @@ RUN python3 -m pip install boto3 pandas s3fs
 COPY requirements.txt requirements.txt
 RUN python3 -m pip install -r requirements.txt
 RUN python3 -m pip install awscli --upgrade --user
+RUN python3 -m pip install pymongo[srv]
 
 COPY ./Modules   ./Modules
 
