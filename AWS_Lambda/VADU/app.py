@@ -1,9 +1,13 @@
 from Modules.CaptureData import VaduApi, VaduCrawler
+from Modules.CutMetrics import CutMetrics
 import json
 import re
 import pandas as pd
 import numpy as np
 import jellyfish as jf 
+import pymongo
+
+vadu_columns = ['Faturamento', 'Funcionarios', 'Nome', 'OpcaoTributaria', 'Porte', 'ReceitaAbertura', 'ReceitaAtividade', 'ReceitaCapitalSocial', 'ReceitaNaturezaJuridica', 'ReceitaSituacao', 'ReceitaSituacaoEspecial', 'TotalProtesto', 'UfEndereco', 'ValorProtesto']
 
 class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -15,6 +19,45 @@ class CustomEncoder(json.JSONEncoder):
             return obj.tolist()
         else:
             return super(CustomEncoder, self).default(obj)
+
+def creat_dict(dic, columns):
+    new_dic = {}
+    for i in columns:
+        if i in dic.keys():
+            new_dic[i] = dic[i]
+    return new_dic
+
+def save_vadu_infos(crawler_result, vadu_result):
+
+    df_final = pd.concat([crawler_result,vadu_result],axis = 1)
+    dado_valido = False
+    if len(CutMetrics.filter(df_final)) > 0 :
+        dado_valido = True
+
+    df_final = df_final.to_dict("records")[0]
+
+    # aux_data = json.dumps(df_final.iloc[0].to_dict(),cls=CustomEncoder)
+    vadu_dict = creat_dict(df_final, vadu_columns)
+    new_dict = {}
+
+    new_dict['cnpj'] =re.sub(r'[^\w\s]','',df_final['cnpj'])  
+    new_dict['vadu_info'] = vadu_dict
+    new_dict['dado_valido'] = dado_valido
+
+    data_dict_1 = json.dumps(new_dict, cls=CustomEncoder)
+    data_dict_final  = json.loads(data_dict_1)
+
+    query = {'cnpj':new_dict['cnpj']}
+    key = {'$set': data_dict_final}
+
+
+    CONNETCION_MONGO = "mongodb+srv://atfUser:mvOX8tCv5Tv4pvJU@atfcluster.t51do.mongodb.net/test"
+    myclient = pymongo.MongoClient(CONNETCION_MONGO)
+    mydb = myclient["atf_score"]
+    mycol = mydb['feature-collection']
+    mycol.find_one_and_update(query,key,upsert=True)
+
+    return data_dict_final
 
 def handler(event, context):
 
@@ -29,14 +72,16 @@ def handler(event, context):
             if jf.levenshtein_distance(event["razao_social"], real_name) > 4:
                 return({'message': 'Não foi possivel capturar pela Razão Social'})
             else:
-                return({"response":json.dumps(pd.concat([crawler_result,vadu_result],axis = 1).iloc[0].to_dict(),cls=CustomEncoder)})
+                data_dict_final = save_vadu_infos(crawler_result, vadu_result)
+                return({"response":data_dict_final})
             
     if len(str(event["cnpj"])) > 0:
         crawler_result = VaduCrawler(event["cnpj"]).capture_data()
         if len(crawler_result):
             cn = re.sub(r'[^\w\s]','',crawler_result['cnpj'].iloc[0])
             vadu_result = VaduApi(cn).capture_data()
-            return({"response":json.dumps(pd.concat([crawler_result,vadu_result],axis = 1).iloc[0].to_dict(),cls=CustomEncoder)})
+            data_dict_final = save_vadu_infos(crawler_result, vadu_result)
+            return({"response":data_dict_final})
         else:
             return({'message': 'Não foi possivel capturar pelo CNPJ'})
 

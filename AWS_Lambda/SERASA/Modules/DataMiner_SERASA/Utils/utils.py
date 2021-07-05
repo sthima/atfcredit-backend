@@ -9,8 +9,8 @@ import os
 def import_serasa_list():
     s3 = boto3.client(
         's3',
-        aws_access_key_id=os.getenv(['AWS_ACCESS_KEY_ID']),
-        aws_secret_access_key=os.getenv(['AWS_SECRET_ACCESS_KEY']),
+        aws_access_key_id="AKIAVTWL6PT5PMSLZ6KP",
+        aws_secret_access_key="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",
     )
 
     bucket = 'lambda-atf-sthima'
