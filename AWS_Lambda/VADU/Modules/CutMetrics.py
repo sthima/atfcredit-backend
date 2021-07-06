@@ -7,11 +7,11 @@ LISTA_UfEndereco = ['RS', 'SC', 'PR', 'SP', 'RJ', 'MG']
 LISTA_ReceitaSituacao = ['ATIVA']
 TEMPO_ReceitaAbertura = 3
 LISTA_ReceitaNaturezaJuridica = ['203-8 - Sociedade de Economia Mista', '204-6 - Sociedade Anônima Aberta', '205-4 - Sociedade Anônima Fechada', '206-2 - Sociedade Empresária Limitada', '208-9 - Sociedade Empresária em Comandita Simples', '209-7 - Sociedade Empresária em Comandita por Ações', '230-5 - Empresa Individual de Responsabilidade Limitada (de Natureza Empresária)', '231-3 - Empresa Individual de Responsabilidade Limitada (de Natureza Simples)']
-LISTA_ReceitaSituacaoEspecial = ['RECUPERACAO JUDICIAL']
+LISTA_ReceitaSituacaoEspecial = ['RECUPERACAO JUDICIAL','']
 VALOR_ReceitaCapitalSocial = 10000
 LISTA_OpcaoTributaria = ['SIMEI','SIMPLES NACIONAL']
 LISTA_Porte = ['MEI','ME']
-LISTA_ReceitaAtividade = ['K', 'M', 'O', 'U']
+LISTA_ReceitaAtividade = ['C', 'P']
 
 class CutMetrics():
 
@@ -29,10 +29,10 @@ class CutMetrics():
         print(len(df))
         df = aux.filter_ReceitaAbertura(df)
         print(len(df))
-        # df = aux.filter_ReceitaNaturezaJuridica(df)
-        # print(len(df))
-        # df = aux.filter_ReceitaSituacaoEspecial(df)
-        # print(len(df))
+        df = aux.filter_ReceitaNaturezaJuridica(df)
+        print(len(df))
+        df = aux.filter_ReceitaSituacaoEspecial(df)
+        print(len(df))
         df = aux.filter_ReceitaCapitalSocial(df)
         print(len(df))
         # df = aux.filter_OpcaoTributaria(df)
@@ -114,14 +114,13 @@ class CutMetrics():
 
 
             try:
-                setor = int(re.split(r'[^\w\s]',x)[0])
+                setor = int(re.split(r'[^\w\s]', x.strip())[0])
                 for i in LISTA_ReceitaAtividade:
                     if setor >= CNAE_SETORES[i][0] and  setor <= CNAE_SETORES[i][1]:
-                        return False
-                return True
+                        return True
+                return False
             except:
-                return True
-        try:
-            return df[df['ReceitaAtividade'].apply(check_cnae_setor)].reset_index(drop = True)
-        except:
-            return df
+                return False
+                
+        df = df[df['ReceitaAtividade'].apply(check_cnae_setor)].reset_index(drop = True)
+        return df
