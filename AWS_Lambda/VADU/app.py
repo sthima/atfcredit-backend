@@ -1,4 +1,4 @@
-from Modules.CaptureData import VaduApi, VaduCrawler
+from Modules.CaptureData import VaduApi
 from Modules.CutMetrics import CutMetrics
 import json
 import re
@@ -27,9 +27,9 @@ def creat_dict(dic, columns):
             new_dic[i] = dic[i]
     return new_dic
 
-def save_vadu_infos(crawler_result, vadu_result):
+def save_vadu_infos(vadu_result):
 
-    df_final = pd.concat([crawler_result,vadu_result],axis = 1)
+    df_final = vadu_result
     dado_valido = False
     if len(CutMetrics.filter(df_final)) > 0 :
         dado_valido = True
@@ -61,29 +61,27 @@ def save_vadu_infos(crawler_result, vadu_result):
 
 def handler(event, context):
 
-    if len(str(event["razao_social"])) > 0:
-        crawler_result = VaduCrawler(event["razao_social"]).capture_data()
+    # if len(str(event["razao_social"])) > 0:
+    #     crawler_result = VaduCrawler(event["razao_social"]).capture_data()
 
-        if len(crawler_result):
-            cn = re.sub(r'[^\w\s]','',crawler_result['cnpj'].iloc[0])
-            vadu_result = VaduApi(cn).capture_data()
+    #     if len(crawler_result):
+    #         cn = re.sub(r'[^\w\s]','',crawler_result['cnpj'].iloc[0])
+    #         vadu_result = VaduApi(cn).capture_data()
 
-            real_name = vadu_result['Nome'].iloc[0]
-            if jf.levenshtein_distance(event["razao_social"], real_name) > 4:
-                return({'message': 'Não foi possivel capturar pela Razão Social'})
-            else:
-                data_dict_final = save_vadu_infos(crawler_result, vadu_result)
-                return({"response":data_dict_final})
-            
-    if len(str(event["cnpj"])) > 0:
-        crawler_result = VaduCrawler(event["cnpj"]).capture_data()
-        if len(crawler_result):
-            cn = re.sub(r'[^\w\s]','',crawler_result['cnpj'].iloc[0])
-            vadu_result = VaduApi(cn).capture_data()
-            data_dict_final = save_vadu_infos(crawler_result, vadu_result)
-            return({"response":data_dict_final})
-        else:
-            return({'message': 'Não foi possivel capturar pelo CNPJ'})
+    #         real_name = vadu_result['Nome'].iloc[0]
+    #         if jf.levenshtein_distance(event["razao_social"], real_name) > 4:
+    #             return({'message': 'Não foi possivel capturar pela Razão Social'})
+    #         else:
+    #             data_dict_final = save_vadu_infos(crawler_result, vadu_result)
+    #             return({"response":data_dict_final})
+
+    try:
+        cn = re.sub(r'[^\w\s]','',event["cnpj"].iloc[0])
+        vadu_result = VaduApi(cn).capture_data()
+        data_dict_final = save_vadu_infos(vadu_result)
+        return({"response":data_dict_final})
+    except:
+        return({'message': 'Não foi possivel capturar pelo CNPJ'})
 
 
 
