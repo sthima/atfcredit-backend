@@ -19,7 +19,7 @@ def predict_cnpj(event, context):
         new_df = df['serasa_info'].apply(lambda x: pd.Series(x))
         new_df[['cnpj','resultado']] = df[['cnpj','resultado']]
         result = Predictor().make_prediction(df)
-        return {"resultado": result['resultado'].iloc[0]}
+        return {"resultado": result['predicao'].iloc[0]}
     else:
         return {"message": "CNPJ não encontrado na base"}
 
@@ -31,7 +31,7 @@ def predict_all_base(event, context):
     df = pd.DataFrame(list(cursor))
     result = Predictor().make_prediction(df)
 
-    return {"resultado": result['resultado']}
+    return {"resultado": result['predicao']}
 
 # docker tag modelo1:latest 385901034746.dkr.ecr.sa-east-1.amazonaws.com/modelo1/train:latest
         

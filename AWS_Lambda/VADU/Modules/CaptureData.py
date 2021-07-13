@@ -52,6 +52,7 @@ class VaduApi():
 
         self.df_final = pd.DataFrame(result)
         self.df_final = self.df_final[api_columns]
+        self.df_final = self.df_final.rename(columns={'CnpjCpf':'cnpj'})
         return self.df_final
 
 class VaduCrawler():

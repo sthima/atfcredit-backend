@@ -1,22 +1,28 @@
 import pandas as pd
 from datetime import datetime
 import re
+import pymongo
 
-
-LISTA_UfEndereco = ['RS', 'SC', 'PR', 'SP', 'RJ', 'MG']
-LISTA_ReceitaSituacao = ['ATIVA']
-TEMPO_ReceitaAbertura = 3
-LISTA_ReceitaNaturezaJuridica = ['203-8 - Sociedade de Economia Mista', '204-6 - Sociedade Anônima Aberta', '205-4 - Sociedade Anônima Fechada', '206-2 - Sociedade Empresária Limitada', '208-9 - Sociedade Empresária em Comandita Simples', '209-7 - Sociedade Empresária em Comandita por Ações', '230-5 - Empresa Individual de Responsabilidade Limitada (de Natureza Empresária)', '231-3 - Empresa Individual de Responsabilidade Limitada (de Natureza Simples)']
-LISTA_ReceitaSituacaoEspecial = ['RECUPERACAO JUDICIAL','']
-VALOR_ReceitaCapitalSocial = 10000
-LISTA_OpcaoTributaria = ['SIMEI','SIMPLES NACIONAL']
-LISTA_Porte = ['MEI','ME']
-LISTA_ReceitaAtividade = ['C', 'P']
+CONNETCION_MONGO = "mongodb+srv://atfUser:mvOX8tCv5Tv4pvJU@atfcluster.t51do.mongodb.net/test"
 
 class CutMetrics():
 
     def __init__(self):
-        pass
+        myclient = pymongo.MongoClient(CONNETCION_MONGO)
+        mydb = myclient["atf_score"]
+        mycol = mydb['cut-rules-collection']
+        cursor = mycol.find()
+        df = pd.DataFrame(list(cursor)).iloc[0]
+
+        self.LISTA_UfEndereco = df["UfEndereco"]
+        self.LISTA_ReceitaSituacao = df["ReceitaSituacao"]
+        self.TEMPO_ReceitaAbertura = df["ReceitaAbertura"]
+        self.LISTA_ReceitaNaturezaJuridica = df["ReceitaNaturezaJuridica"]
+        self.LISTA_ReceitaSituacaoEspecial = df["ReceitaSituacaoEspecial"]
+        self.VALOR_ReceitaCapitalSocial = df["ReceitaCapitalSocial"]
+        self.LISTA_OpcaoTributaria = df["OpcaoTributaria"]
+        self.LISTA_Porte = df["Porte"]
+        self.LISTA_ReceitaAtividade = df["ReceitaAtividade"]
 
     @staticmethod
     def filter(df):
@@ -45,14 +51,14 @@ class CutMetrics():
     
     def filter_UfEndereco(self, df):
         try:
-            return df[df['UfEndereco'].isin(LISTA_UfEndereco)].reset_index(drop = True)
+            return df[df['UfEndereco'].isin(self.LISTA_UfEndereco)].reset_index(drop = True)
         except:
             return df
         
         
     def filter_ReceitaSituacao(self, df):
         try:
-            return df[df['ReceitaSituacao'].isin(LISTA_ReceitaSituacao)].reset_index(drop = True)
+            return df[df['ReceitaSituacao'].isin(self.LISTA_ReceitaSituacao)].reset_index(drop = True)
         except:
             return df
 
@@ -60,7 +66,7 @@ class CutMetrics():
     def filter_ReceitaAbertura(self, df):
         try:
             df['diff_date'] = pd.to_datetime(df['ReceitaAbertura']).apply(lambda x: datetime.now().date().year - x.year)
-            df = df[df['diff_date'] >= TEMPO_ReceitaAbertura].reset_index(drop = True)
+            df = df[df['diff_date'] >= self.TEMPO_ReceitaAbertura].reset_index(drop = True)
             return df.drop(columns = ['diff_date'])
         except:
             return df
@@ -68,7 +74,7 @@ class CutMetrics():
 
     def filter_ReceitaNaturezaJuridica(self, df):
         try:
-            return df[df['ReceitaNaturezaJuridica'].isin(LISTA_ReceitaNaturezaJuridica)].reset_index(drop = True)
+            return df[df['ReceitaNaturezaJuridica'].isin(self.LISTA_ReceitaNaturezaJuridica)].reset_index(drop = True)
         except:
             return df
 
@@ -76,28 +82,28 @@ class CutMetrics():
     def filter_ReceitaSituacaoEspecial(self, df):
         try:
             return df[(df['ReceitaSituacaoEspecial'].isnull()) |\
-                    (df['ReceitaSituacaoEspecial'].isin(LISTA_ReceitaSituacaoEspecial))].reset_index(drop = True)
+                    (df['ReceitaSituacaoEspecial'].isin(self.LISTA_ReceitaSituacaoEspecial))].reset_index(drop = True)
         except:
             return df
 
 
     def filter_ReceitaCapitalSocial(self, df):
         try:
-            return df[df['ReceitaCapitalSocial']>=VALOR_ReceitaCapitalSocial].reset_index(drop = True)
+            return df[df['ReceitaCapitalSocial']>=self.VALOR_ReceitaCapitalSocial].reset_index(drop = True)
         except:
             return df
 
 
     def filter_OpcaoTributaria(self, df):
         try:
-            return df[~(df['OpcaoTributaria'].isin(LISTA_OpcaoTributaria))].reset_index(drop = True)
+            return df[~(df['OpcaoTributaria'].isin(self.LISTA_OpcaoTributaria))].reset_index(drop = True)
         except:
             return df
 
 
     def filter_Porte(self, df):
         try:
-            return df[~(df['Porte'].isin(LISTA_Porte))].reset_index(drop = True)
+            return df[~(df['Porte'].isin(self.LISTA_Porte))].reset_index(drop = True)
         except:
             return df
 
@@ -115,7 +121,7 @@ class CutMetrics():
 
             try:
                 setor = int(re.split(r'[^\w\s]', x.strip())[0])
-                for i in LISTA_ReceitaAtividade:
+                for i in self.LISTA_ReceitaAtividade:
                     if setor >= CNAE_SETORES[i][0] and  setor <= CNAE_SETORES[i][1]:
                         return True
                 return False

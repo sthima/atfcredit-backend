@@ -29,7 +29,7 @@ def predict_cnpj(event, context):
             new_df2[['cnpj','resultado']] = df[['cnpj','resultado']]
 
             result = Predictor().make_prediction(new_df1, new_df2)
-            return {"resultado": result['resultado'].iloc[0]}
+            return {"resultado": result['predicao'].iloc[0]}
             
     else:
         return {"message": "CNPJ não encontrado na base"}

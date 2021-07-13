@@ -59,6 +59,33 @@ def save_vadu_infos(vadu_result):
 
     return data_dict_final
 
+
+def update_cut_rules(event, context):
+    CONNETCION_MONGO = "mongodb+srv://atfUser:mvOX8tCv5Tv4pvJU@atfcluster.t51do.mongodb.net/test"
+    myclient = pymongo.MongoClient(CONNETCION_MONGO)
+    mydb = myclient["atf_score"]
+    mycol = mydb['feature-collection']
+    cursor = mycol.find()
+    df = pd.DataFrame(list(cursor))
+    new_df = df['vadu_info'].apply(lambda x: pd.Series(x))
+    new_df[['cnpj','resultado']] = df[['cnpj','resultado']]
+
+    aux = CutMetrics.filter(new_df)
+
+    new_df.loc[new_df['cnpj'].isin(aux['cnpj']), 'dado_valido'] = True
+    new_df.loc[~new_df['cnpj'].isin(aux['cnpj']), 'dado_valido'] = False
+
+    df_save = pd.concat([new_df[['cnpj','dado_valido']],df[['cnpj','dado_valido']].dropna()]).drop_duplicates(keep=False).reset_index(drop = True)
+
+
+    for i, line in df_save.iterrows():
+        query = {'cnpj':line['cnpj']}
+        key = {'$set': {'dado_valido':line['dado_valido']}}
+        mycol.find_one_and_update(query,key)
+
+    return {'response':"Regras de Corte atualizadas"}
+
+
 def handler(event, context):
 
     # if len(str(event["razao_social"])) > 0:
@@ -75,13 +102,11 @@ def handler(event, context):
     #             data_dict_final = save_vadu_infos(crawler_result, vadu_result)
     #             return({"response":data_dict_final})
 
-    try:
-        cn = re.sub(r'[^\w\s]','',event["cnpj"].iloc[0])
-        vadu_result = VaduApi(cn).capture_data()
-        data_dict_final = save_vadu_infos(vadu_result)
-        return({"response":data_dict_final})
-    except:
-        return({'message': 'Não foi possivel capturar pelo CNPJ'})
+
+    cn = re.sub(r'[^\w\s]','',event["cnpj"])
+    vadu_result = VaduApi(cn).capture_data()
+    data_dict_final = save_vadu_infos(vadu_result)
+    return({"response":data_dict_final})
 
 
 

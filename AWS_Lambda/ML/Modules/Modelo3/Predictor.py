@@ -58,7 +58,7 @@ class Predictor():
     def _get_feature_list(self,opt, X):
         feature_list = {}
         for key in opt.keys():
-            if key in ['min_samples_split','max_depth','test_size']:
+            if key in ['min_samples_split','max_depth','n_estimators']:
                 continue
             else:
                 if opt[key] is False:
@@ -71,15 +71,17 @@ class Predictor():
 
         return pd.DataFrame(feature_list)
 
-    def search_paramns(self, X, y):
+    def search_paramns(self, X, y, epochs_train = 500):
         def model(opt):          
             X_new = self._get_feature_list(opt, X)
-            xgb = RandomForestClassifier(
+            rc = RandomForestClassifier(
+                n_estimators = opt["n_estimators"],
+                n_jobs = -1,
                 max_depth=opt["max_depth"],
                 min_samples_split = opt["min_samples_split"]
             )
 
-            scores = cross_val_score(xgb, X_new, y, cv=7)
+            scores = cross_val_score(rc, X_new, y, cv=7)
             score = scores.mean()
             return score
 
@@ -95,9 +97,9 @@ class Predictor():
         ]
 
         search_space = {
+            "n_estimators":[100,500,700,1000,1500],
             "min_samples_split": list(range(5, 70)),
             "max_depth": list(range(3, 150)),
-            "test_size": [0.3, 0.28, 0.33, 0.25],
         }
 
         for c in X.columns:
@@ -108,14 +110,14 @@ class Predictor():
             distribution="laplace",
             n_neighbours=2,
             rand_rest_p=0.01,
-            p_accept=0.10,
+            p_accept=0.15,
             norm_factor="adaptive",
-            annealing_rate=0.999,
+            annealing_rate=0.95,
             start_temp=0.85,
         )
 
         hyper = Hyperactive()
-        hyper.add_search(model, search_space, optimizer = optimizer, n_iter=500)
+        hyper.add_search(model, search_space, optimizer = optimizer, n_iter=epochs_train)
         hyper.run()
         return hyper.best_para(model), hyper.best_score(model)
 
@@ -139,8 +141,37 @@ class Predictor():
             joblib.dump(model, fp)
             fp.seek(0)
             s3.Bucket(bucket_name).put_object(Key= OutputFile, Body=fp.read())
+
+    def get_last_version(self, model_type = 'modelo1'):
+        try:
+            s3 = boto3.resource('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
+            bucket_name = 'lambda-atf-sthima'
+            versions = set()
+            my_bucket = s3.Bucket(bucket_name)
+
+            for file in my_bucket.objects.all():
+                if model_type in file.key and file.key.split('/')[2] != '':
+                    versions.add(int(file.key.split('/')[2].split('.')[1]))
+
+            return np.max(list(versions))
+        except:
+            return 0
+
+    def _save_model_infos(self, model_name,model_version, accuracy,total_data):
+    
+        model_dict = {'model_name': str(model_name),
+                    'model_version': int(model_version),
+                    'used': False,
+                    'accuracy': float(accuracy),
+                    'total_data':int(total_data)}
+
+        myclient = pymongo.MongoClient(CONNETCION_MONGO)
+        mydb = myclient["atf_score"]
+        mycol = mydb['models-collection']
+        mycol.insert_one(model_dict)
+        return model_dict
         
-    def train_new_model(self):
+    def train_new_model(self, epochs_train = 500):
         df1, df2 = self._get_train_data()
 
         df_serasa = ClearModelo1(df1).clear_df()
@@ -148,7 +179,7 @@ class Predictor():
 
         df_final = df_vadu.merge(df_serasa)
 
-        X = df_serasa.drop(columns = ['cnpj','resultado'])
+        X = df_serasa[df_serasa['cnpj'].isin(df_final['cnpj'])].drop(columns = ['cnpj','resultado'])
         y = df_final['resultado'].astype(int)
 
         scaler = StandardScaler()
@@ -160,16 +191,20 @@ class Predictor():
         pca_X = pd.DataFrame(pca_model.transform(X), columns = ['feature_'+str(i) for i in range(0,4)])
         final_X = pd.concat([pca_X, df_vadu.drop(columns = ['cnpj','resultado','Nome','ReceitaSituacao'])], axis = 1)
 
-        opt, result_acc = self.search_paramns(final_X, y)
-        rc = RandomForestClassifier(max_depth=int(opt["max_depth"]),min_samples_split = int(opt["min_samples_split"]))
+        opt, result_acc = self.search_paramns(final_X, y, epochs_train)
+        rc = RandomForestClassifier(n_estimators = int(opt["n_estimators"]),\
+                                    max_depth=int(opt["max_depth"]),\
+                                    min_samples_split = int(opt["min_samples_split"]))
 
         rc.fit(self._get_feature_list(opt, final_X), y)
+        
+        last_version = self.get_last_version('modelo3') + 1
+        self._save_model_on_S3(rc,'modelo3/modelo_3.'+str(last_version)+'.sav')
+        self._save_model_on_S3(pca_model,'modelo3/pca_modelo_3.'+str(last_version)+'.sav')
+        self._save_opt_on_S3(opt,'modelo3/opt_modelo_3.'+str(last_version)+'.json')
+        model_infos = self._save_model_infos('modelo_3',last_version, result_acc, len(final_X))
 
-        self._save_model_on_S3(rc,'modelo_3.sav')
-        self._save_model_on_S3(pca_model,'pca_modelo_3.sav')
-        self._save_opt_on_S3(opt,'opt_modelo_3.json')
-
-        return result_acc
+        return model_infos
 
     def _download_model(self, model_name):
         s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
@@ -184,12 +219,11 @@ class Predictor():
         return model
 
     
-    def _download_opt(self):
+    def _download_opt(self, KEY):
         s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
         bucket_name = 'lambda-atf-sthima'
-        KEY = 'models/opt_modelo_3.json'
 
-        response = s3.get_object(Bucket=bucket_name, Key=KEY)
+        response = s3.get_object(Bucket=bucket_name, Key='models/'+KEY)
         infile = response['Body'].read().decode("utf-8")
         print(infile)
         opt = json.loads(infile)
@@ -211,12 +245,20 @@ class Predictor():
 
         return opt
 
+    def get_model_version_used(self, model_name):
+        myclient = pymongo.MongoClient(CONNETCION_MONGO)
+        mydb = myclient["atf_score"]
+        mycol = mydb['models-collection']
+        cursor = mycol.find({'used':True, 'model_name':model_name})
+        df = pd.DataFrame(list(cursor))
+        return df['model_version'].iloc[0]
+        
 
     def make_prediction(self, df1, df2):
-        
-        modelo = self._download_model("modelo_3.sav")
-        pca = self._download_model("pca_modelo_3.sav")
-        opt = self._download_opt()
+        version_use = self.get_model_version_used('modelo_3')
+        modelo = self._download_model("modelo3/modelo_3."+str(version_use)+".sav")
+        pca = self._download_model("modelo3/pca_modelo_3."+str(version_use)+".sav")
+        opt = self._download_opt('modelo3/opt_modelo_3.'+str(version_use)+'.json')
 
         df_serasa = ClearModelo1(df1).clear_df()
         df_vadu = ClearModelo2(df2).clear_df()
@@ -263,6 +305,6 @@ class Predictor():
         for _, line in df.iterrows():
 
             myquery = { "cnpj": line['cnpj'] }
-            newvalues = { "$set": { "predicao_modelo3": line['resultado'], "classificacao_modelo3": line["classificacao"] } }
+            newvalues = { "$set": { "predicao_modelo3": line['predicao'], "classificacao_modelo3": line["classificacao"] } }
 
             mycol.update_one(myquery, newvalues)
