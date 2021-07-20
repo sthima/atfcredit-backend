@@ -1,0 +1,10 @@
+{
+  "lambda": {
+    "role": "node_lambda_mongo_api-executor",
+    "name": "node_lambda_mongo_api",
+    "region": "sa-east-1"
+  },
+  "api": {
+    "id": "46a18hkx8f"
+  }
+}

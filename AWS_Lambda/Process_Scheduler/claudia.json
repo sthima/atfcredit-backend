@@ -1,0 +1,10 @@
+{
+  "lambda": {
+    "role": "node_lambda_process_scheduler-executor",
+    "name": "node_lambda_process_scheduler",
+    "region": "sa-east-1"
+  },
+  "api": {
+    "id": "3x2oc0qhg1"
+  }
+}
