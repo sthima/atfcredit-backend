@@ -21,7 +21,7 @@ app.use(function (req, res, next) {
 router.get('/', async function (req, res) {
   try {
     const MongoClient = require('mongodb').MongoClient;
-    const uri = 'mongodb+srv://atfUser:mvOX8tCv5Tv4pvJU@atfcluster.t51do.mongodb.net/atf_score?retryWrites=true&w=majority';
+    const uri = '';
     const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
     const dateScheduler = moment().subtract(1, 'days').format('YYYY-MM-DD');

@@ -17,7 +17,7 @@ const formatData = (data) => {
 
 const initMongoClient = () => {
   const MongoClient = require('mongodb').MongoClient;
-  const uri = 'mongodb+srv://atfUser:mvOX8tCv5Tv4pvJU@atfcluster.t51do.mongodb.net/atf_score?retryWrites=true&w=majority';
+  const uri = '';
   return new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 };
 

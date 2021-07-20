@@ -64,7 +64,7 @@ const formatRegisters = (registers) => {
 router.get('/', async function (req, res) {
   try {
     const MongoClient = require('mongodb').MongoClient;
-    const uri = 'mongodb+srv://atfUser:mvOX8tCv5Tv4pvJU@atfcluster.t51do.mongodb.net/atf_score?retryWrites=true&w=majority';
+    const uri = '';
     const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
     await client.connect();
