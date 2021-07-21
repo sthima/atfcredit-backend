@@ -2,13 +2,14 @@ const { Router } = require('express');
 
 const creditRouter = Router();
 
-const formatData = (data) => {
+const formatData = (data, acc) => {
   return data.map((record) => {
     return {
       cnpj: record.cnpj,
       classificacao: record.classificacao_modelo3,
       predicao: (record.predicao_modelo3 * 100).toFixed(1) + '%',
       resultado: record.resultado,
+      accuracy: parseFloat(acc.toFixed(2)),
       nome: record.vadu_info ? record.vadu_info.Nome : null,
       UF: record.vadu_info ? record.vadu_info.UfEndereco : null
     };
@@ -54,8 +55,10 @@ creditRouter.get('/register/:cnpj', async (req, res) => {
 
     const data = await client.db('atf_score').collection('feature-collection').find({ cnpj: cnpj })
       .project({ _id: 0, cnpj: 1, resultado: 1, classificacao_modelo3: 1, predicao_modelo3: 1, vadu_info: 1 }).toArray();
+    const acc = await client.db('atf_score').collection('models-collection').find({ model_name: 'modelo_3',  used: true}).toArray();      
+    
 
-    if (data && data.length > 0) res.json({ company: formatData(data)[0] });
+    if (data && data.length > 0) res.json({ company: formatData(data, acc[0]['accuracy'])[0] });
     else res.status(404).json({ message: 'Nenhum registo encontrado' });
 
     client.close();
@@ -72,8 +75,10 @@ creditRouter.get('/best', async (req, res) => {
 
     const data = await client.db('atf_score').collection('feature-collection').find({ dado_valido: true }).sort({ predicao_modelo3: -1 })
       .limit(100).project({ _id: 0, cnpj: 1, resultado: 1, classificacao_modelo3: 1, predicao_modelo3: 1, vadu_info: 1 }).toArray();
+    const acc = await client.db('atf_score').collection('models-collection').find({ model_name: 'modelo_3',  used: true}).toArray();      
+    
 
-    if (data && data.length > 0) res.json({ companies: formatData(data) });
+    if (data && data.length > 0) res.json({ companies: formatData(data, acc[0]['accuracy']) });
     else res.status(404).json({ message: 'Nenhum registo encontrado' });
 
     client.close();
