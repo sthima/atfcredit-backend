@@ -53,7 +53,7 @@ router.get('/', async function (req, res) {
     const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
     await client.connect();
-    await client.db('atf_score').collection('initial-collection').updateMany({ dado_valido: true }, { $set: { predicao_modelo1: -1, predicao_modelo3: -1 } });
+    await client.db('atf_score').collection('feature-collection').updateMany({ dado_valido: true }, { $set: { predicao_modelo1: -1, predicao_modelo3: -1 } });
     console.log('Updated predictions');
     client.close();
 
