@@ -71,7 +71,7 @@ class Predictor():
 
         return pd.DataFrame(feature_list)
 
-    def search_paramns(self, X, y, epochs_train = 500):
+    def search_paramns(self, X, y, epochs_train = 50):
         def model(opt):          
             X_new = self._get_feature_list(opt, X)
             rc = RandomForestClassifier(
@@ -171,7 +171,7 @@ class Predictor():
         mycol.insert_one(model_dict)
         return model_dict
         
-    def train_new_model(self, epochs_train = 500):
+    def train_new_model(self, epochs_train = 50):
         df1, df2 = self._get_train_data()
 
         df_serasa = ClearModelo1(df1).clear_df()
