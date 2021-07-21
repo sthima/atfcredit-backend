@@ -3,8 +3,9 @@ import pymongo
 import pandas as pd
 
 def train(event, context):
-    acc = Predictor().train_new_model()
-    return {"acc":acc}
+    result = Predictor().train_new_model()
+
+    return {"model_name":result['model_name'], "model_version":result['model_version'], "accuracy": result['accuracy']}
 
 CONNETCION_MONGO = "mongodb+srv://atfUser:mvOX8tCv5Tv4pvJU@atfcluster.t51do.mongodb.net/test"
 
@@ -35,6 +36,6 @@ def predict_all_base(event, context):
 
 # docker tag modelo1:latest 385901034746.dkr.ecr.sa-east-1.amazonaws.com/modelo1/train:latest
         
-# docker push 385901034746.dkr.ecr.sa-east-1.amazonaws.com/modelo1/train:latest
+# docker push 385901034746.dkr.ecr.sa-east-1.amazonaws.com/modelo1:latest
 
 # aws ecr get-login-password | docker login --username AWS --password-stdin 385901034746.dkr.ecr.sa-east-1.amazonaws.com/modelo1/train:latest
