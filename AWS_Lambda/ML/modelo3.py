@@ -3,7 +3,13 @@ import pymongo
 import pandas as pd
 
 def train(event, context):
-    result = Predictor().train_new_model()
+    
+    try:
+        epochs = event['epochs']
+    except:
+        epochs = 50
+
+    result = Predictor().train_new_model(epochs)
 
     return {"model_name":result['model_name'], "model_version":result['model_version'], "accuracy": result['accuracy']}
 
