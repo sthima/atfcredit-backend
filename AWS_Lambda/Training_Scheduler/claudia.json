@@ -1,0 +1,10 @@
+{
+  "lambda": {
+    "role": "node_lambda_training_scheduler-executor",
+    "name": "node_lambda_training_scheduler",
+    "region": "sa-east-1"
+  },
+  "api": {
+    "id": "kxv1eo91rk"
+  }
+}
