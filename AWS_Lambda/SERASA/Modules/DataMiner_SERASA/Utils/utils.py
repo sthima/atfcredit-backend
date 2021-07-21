@@ -1,0 +1,81 @@
+
+from unidecode import unidecode
+import pandas as pd
+import numpy as np
+import boto3
+import json
+import os
+
+def import_serasa_list():
+    s3 = boto3.client(
+        's3',
+        aws_access_key_id="AKIAVTWL6PT5PMSLZ6KP",
+        aws_secret_access_key="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",
+    )
+
+    bucket = 'lambda-atf-sthima'
+    key = 'Lista de fundos na Serasa.txt'
+
+    response = s3.get_object(Bucket=bucket, Key=key)
+    infile = response['Body'].read()
+
+    fundos_serasa = []    
+    for line in infile.decode("utf-8").split('\r\n') : 
+        aux = line.replace('\n','').strip().upper()
+        if len(aux) > 0:
+            fundos_serasa.append(unidecode(aux))
+                
+    return pd.Series(fundos_serasa)
+
+class CustomEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(CustomEncoder, self).default(obj)
+
+
+class ClearText():
+    @staticmethod
+    def convert_text_to_float(line):
+        line_aux = []
+
+        for x in line:
+            try:
+                if not(pd.isna(x)):
+                    
+                    mult = 1000
+                    if x.find('MIL') >= 0:
+                        mult = 1000
+                    elif x.find('%') >= 0:
+                        mult = 1 
+                    elif x.find('M') >= 0 or x.find('MI') >= 0: 
+                        mult = 1000000
+                    
+                    x = x.replace('%', '')
+                    
+                    numbers = x.split('A')
+
+                    numbers = [i.replace(',','.') for i in numbers]
+                    numbers = [i.replace('MIL','') for i in numbers]
+                    numbers = [i.replace('MI','') for i in numbers]
+                    numbers = [i.replace('M','') for i in numbers]
+                    numbers = [i.strip() for i in numbers]
+                    numbers = np.array(numbers)
+                    numbers = numbers[numbers!='']
+                    numbers = [float(i)*mult for i in numbers]
+
+                    line_aux.append(numbers[0])
+                else:
+                    line_aux.append(0)
+            except:
+                line_aux.append(np.nan)
+
+        return pd.Series(line_aux)
+
+
+fundos_serasa = import_serasa_list()

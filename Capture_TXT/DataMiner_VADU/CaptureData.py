@@ -12,6 +12,7 @@ import json
 import pandas as pd
 import time 
 import jellyfish as jf
+from chromedriver_py import binary_path
 
 
 class VaduApi():
@@ -25,7 +26,7 @@ class VaduApi():
 
     def capture_data(self):
         url = "https://www.vadu.com.br/vadu.dll/ServicoAnaliseOperacao/Consulta/{}"
-        api_columns = ['CnpjCpf', 'Nome', 'UfEndereco','ReceitaSituacao','ReceitaAbertura','ReceitaNaturezaJuridica','ReceitaSituacaoEspecial','ReceitaCapitalSocial','OpcaoTributaria','Porte','ReceitaAtividade']
+        api_columns = ['CnpjCpf', 'Nome', 'UfEndereco','ReceitaSituacao','ReceitaAbertura','ReceitaNaturezaJuridica','ReceitaSituacaoEspecial','ReceitaCapitalSocial','Porte','ReceitaAtividade']
 
         payload={}
         headers = {
@@ -84,14 +85,24 @@ class VaduCrawler():
 
     def open_vadu_web_site(self):
         options = webdriver.ChromeOptions()
-        # options.add_argument("--headless")
+        options.add_argument('headless')
+        options.add_argument('--no-sandbox')
+        options.add_argument("window-size=1920x1080")
+
         driver = webdriver.Chrome(chrome_options=options)
         driver.get(self.VADU_SITE_HOST)
         return driver
 
         
-        
-    def close_modal(self):
+    def close_modal1(self):
+        close_button = self.driver.find_elements_by_id("naoAbreAbaSCR")
+        if len(close_button):
+            try:
+                close_button[0].click()
+            except:
+                pass
+
+    def close_modal2(self):
         close_button = self.driver.find_elements_by_id("naoRedirecionaInfoCredit")
         if len(close_button):
             try:
@@ -115,15 +126,6 @@ class VaduCrawler():
         self.driver.get(self.VADU_SITE_HOST)
         if len(self.driver.find_elements_by_class_name('g-recaptcha-outer')):
             self.driver.close()
-            
-            # aux_driver = webdriver.Firefox()
-            # aux_driver.get(self.VADU_SITE_HOST)
-            # self.make_login(aux_driver)
-            # self.close_modal(aux_driver)
-            # aux_driver.close()
-            print('FAÇA O LOGIN DE FORMA MANUAL')
-            input()
-
             self.driver = self.open_vadu_web_site()
         
         self.make_login()
@@ -171,19 +173,23 @@ class VaduCrawler():
             return False
 
 
-    def wait_load(self, delay = 60):
+    def wait_load(self, delay = 300):
         try:
             start = time.time()
-            while self.driver.find_element_by_class_name('totalProtestos').text == '' or (time.time() - start) > delay:
+            while self.driver.find_element_by_class_name('totalProtestos').text == '' and (time.time() - start) < delay:
                 self.driver.find_element_by_xpath('//a[@href="#tabProtestos"]').click()
-                if self.driver.find_element_by_class_name('totalProtestos').text == '?':
-                    break
+                if len(self.driver.find_element_by_class_name('totalProtestos').text) > 0:
+                    return True
+                    # break
+            
+            if (time.time() - start) > delay:
+                return False
 
-            return True
+
         except TimeoutException:
             return False
         
-    def wait_load_button(self, delay = 60):
+    def wait_load_button(self, delay = 300):
         try:
             element = WebDriverWait(self.driver,delay).until(EC.element_to_be_clickable((By.ID, "btnAcaoAtualizarProtestoV2")))
             return True
@@ -223,7 +229,8 @@ class VaduCrawler():
     def capture_VADU_info(self, cnpj):
         self.driver.get(self.VADU_SITE_HOST)
         self.login()
-        self.close_modal()
+        self.close_modal1()
+        self.close_modal2()
 
         self.search_cnpj(cnpj)
         
@@ -243,16 +250,17 @@ class VaduCrawler():
         
         protest_button = WebDriverWait(self.driver,5).until(EC.presence_of_element_located((By.XPATH, '//a[@href="#tabProtestos"]')))
         protest_button.click()
-
+        
+        time.sleep(1)
         if not(self.wait_load()):
             print('DEMOROU DMAIS')
-            return self.DEFAULT_OBJ(cnpj)
+            return self.DEFAULT_OBJ(cnpj, faturamento=faturamento, funcionarios=funcionarios)
         
         if self.necessary_update():
             self.driver.find_element_by_id('btnAcaoAtualizarProtestoV2').click()
             if not(self.wait_load_button()):
                 print('DEU ERRO 2')
-                return self.DEFAULT_OBJ(cnpj)
+                return self.DEFAULT_OBJ(cnpj, faturamento=faturamento, funcionarios=funcionarios)
         
         total_protesto = self.driver.find_element_by_class_name('totalProtestos').text
         valor_protesto = self.driver.find_element_by_class_name('valor-total-protestos').text.replace('R$','').strip()
@@ -282,5 +290,3 @@ class VaduCrawler():
                 else:
                     return self.fill_info_vector( cnpj_vector, i, vadu_infos, n_try)
 
-
-        
